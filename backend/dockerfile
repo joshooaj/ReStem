@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y ffmpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir -r requirements.txt \
-    && mkdir /separated
+    && mkdir ./completed ./uploads
 
 ENTRYPOINT [ "demucs" ]
-VOLUME [ "/app/uploads", "/app/completed" ]
+VOLUME [ "/app/completed", "/app/uploads" ]
+EXPOSE 80
