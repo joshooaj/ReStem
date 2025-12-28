@@ -12,6 +12,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PIP_CACHE_DIR=/app/pip-cache
+      # Uncomment to use CPU-only mode (smaller download, no GPU required):
+      # - USE_CPU=1
     deploy:
       resources:
         reservations:

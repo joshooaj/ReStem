@@ -26,31 +26,35 @@ docker compose restart backend
 
 ## Image Sizes
 
-- **Base image**: ~500MB (just Python 3.11 + FFmpeg)
-- **With CPU-only PyTorch**: ~2.5GB total (cached in volume)
-- **With GPU PyTorch**: ~7GB total (if you enable CUDA)
+- **Base image**: ~835MB (Python 3.11 + FFmpeg + code)
+- **With CPU-only PyTorch**: ~1.5GB total (cached in volume)
+- **With GPU PyTorch** (default): ~8GB total (includes CUDA libraries)
 
 ## Switching Between CPU and GPU
 
-Edit `backend/requirements.txt`:
+By default, **GPU support is enabled**. To use CPU-only mode (smaller, faster download):
 
-**For CPU-only (default, smaller):**
+**Option 1: Environment variable (recommended)**
+
+Edit `docker-compose.yml` and uncomment:
+```yaml
+environment:
+  - USE_CPU=1
+```
+
+**Option 2: Edit requirements.txt**
+
+Change the PyTorch lines to:
 ```
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.5.1+cpu
 torchaudio==2.5.1+cpu
 ```
 
-**For GPU support:**
-```
-torch==2.5.1
-torchaudio==2.5.1
-```
-
 Then rebuild:
 ```powershell
 docker compose down -v  # Remove volumes to force reinstall
-docker compose up --build -d
+docker compose up -d
 ```
 
 ## Volumes
