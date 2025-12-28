@@ -27,13 +27,12 @@ try:
     from square import Square
     from square.environment import SquareEnvironment
     from square.core.api_error import ApiError
-    from dotenv import load_dotenv
-    load_dotenv()
     SQUARE_AVAILABLE = True
 except ImportError:
     SQUARE_AVAILABLE = False
-    AsyncSquare = None
+    Square = None
     SquareEnvironment = None
+    ApiError = None
 
 from database import get_db, engine, Base
 from models import User, Job, JobStatus, CreditTransaction
@@ -88,12 +87,12 @@ SQUARE_LOCATION_ID = os.getenv("SQUARE_LOCATION_ID", "")
 
 # Initialize Square client
 square_client = None
-if SQUARE_ACCESS_TOKEN and SQUARE_AVAILABLE and AsyncSquare:
+if SQUARE_ACCESS_TOKEN and SQUARE_AVAILABLE and Square:
     # Map environment string to Square Environment enum
     env = SquareEnvironment.SANDBOX if SQUARE_ENVIRONMENT.lower() == "sandbox" else SquareEnvironment.PRODUCTION
     square_client = Square(
-        token=SQUARE_ACCESS_TOKEN,
         environment=env,
+        token=SQUARE_ACCESS_TOKEN,
     )
     logger.info(f"Square client initialized in {SQUARE_ENVIRONMENT} mode")
 elif not SQUARE_AVAILABLE:
@@ -411,8 +410,8 @@ async def purchase_credits(
         # Create Square payment
         idempotency_key = str(uuid.uuid4())
         
-        # Call Square payments API with new SDK
-        payment = await square_client.payments.create(
+        # Call Square payments API (synchronous as per quickstart)
+        payment = square_client.payments.create(
             source_id=purchase.payment_nonce,
             idempotency_key=idempotency_key,
             amount_money={
@@ -451,9 +450,13 @@ async def purchase_credits(
             "payment_id": payment_id
         }
     
+    except ApiError as e:
+        # Handle Square API errors as per quickstart docs
+        error_details = ", ".join([f"{error.category}: {error.code} - {error.detail}" for error in e.errors])
+        logger.error(f"Square API error for user {current_user.id}: {error_details}")
+        raise HTTPException(status_code=400, detail=f"Payment failed: {error_details}")
     except Exception as e:
         logger.error(f"Error processing payment for user {current_user.id}: {str(e)}")
-        # Square SDK throws ApiError with details
         raise HTTPException(status_code=500, detail=f"Payment processing error: {str(e)}")
 
 
