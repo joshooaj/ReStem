@@ -226,22 +226,22 @@ updated_at TIMESTAMP DEFAULT NOW()
 - ⚠️ **TODO:** Add HTTPS/TLS
 
 ## Known Limitations
-1. **Credit purchase is simulated** - needs Stripe/PayPal integration
+1. **Credit purchase is simulated** - needs Square integration
 2. **No email verification** - users can register without verification
 3. **No password reset** - users can't recover accounts
 4. **No admin panel** - can't manage users or view statistics
-5. **Local file storage** - should use S3/R2 for production
+5. **Local file storage** - manual disk space management needed
 6. **No rate limiting** - users can spam endpoints
 
 ## Next Steps (Phase 2)
 
 ### 🔥 Critical for Production
-1. **Stripe Integration** - Real payment processing
+1. **Square Integration** - Real payment processing (Web Payments SDK)
 2. **Email Service** - SendGrid/Mailgun for verification and notifications
-3. **Cloud Storage** - AWS S3 or Cloudflare R2 for audio files
-4. **Rate Limiting** - Prevent API abuse
-5. **HTTPS/TLS** - Secure communication
-6. **Environment Secrets** - Use proper secret management
+3. **Rate Limiting** - Prevent API abuse
+4. **HTTPS/TLS** - Secure communication (Caddy or nginx)
+5. **Environment Secrets** - Use proper secret management
+6. **Disk Space Management** - Auto-cleanup old jobs (since using local storage)
 
 ### 🎯 High Priority
 1. **Admin Dashboard** - User management, statistics, refunds
@@ -267,13 +267,13 @@ updated_at TIMESTAMP DEFAULT NOW()
 - **Processing:** Uses local GPU/CPU
 
 ### Production Hosting (Estimated)
-- **VPS with GPU:** $50-200/month (Hetzner, Lambda Labs)
-- **Database:** $15-30/month (DigitalOcean Managed PostgreSQL)
-- **Storage (S3):** ~$0.02/GB/month + transfer costs
-- **Domain + SSL:** $15/year (Cloudflare, free SSL)
+- **VPS with GPU:** $50-200/month (Hetzner, Lambda Labs, or home server)
+- **Database:** $15-30/month (DigitalOcean Managed PostgreSQL) or local PostgreSQL
+- **Storage:** Local disk (free, but monitor space)
+- **Domain + SSL:** $15/year (Cloudflare, free SSL with Caddy)
 - **Email Service:** $0-15/month (SendGrid free tier then paid)
 
-**Total:** ~$70-250/month depending on scale
+**Total:** ~$70-250/month for hosted, or ~$15-30/month if self-hosted with existing hardware
 
 ### Revenue Model
 - **1 credit = 1 song separation**

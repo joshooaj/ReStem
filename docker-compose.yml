@@ -9,11 +9,12 @@ services:
       - demucs-uploads:/app/uploads
       - demucs-pip-cache:/app/pip-cache
       - demucs-packages:/app/.packages_installed
+      - ./frontend:/app/frontend
     environment:
       - PYTHONUNBUFFERED=1
       - PIP_CACHE_DIR=/app/pip-cache
       # Uncomment to use CPU-only mode (smaller download, no GPU required):
-      # - USE_CPU=1
+      - USE_CPU=1
       - DATABASE_URL=postgresql://demucs:demucs123@postgres:5432/demucs
       - SECRET_KEY=your-secret-key-change-in-production
     depends_on:

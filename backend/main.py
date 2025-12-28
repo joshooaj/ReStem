@@ -18,7 +18,8 @@ from typing import Optional
 import aiofiles
 from fastapi import FastAPI, File, HTTPException, UploadFile, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
@@ -614,6 +615,49 @@ async def root():
         "version": "2.0.0",
         "features": ["authentication", "credit_system", "job_tracking"]
     }
+
+
+# ============================================================================
+# Frontend Routes
+# ============================================================================
+
+@app.get("/app/", response_class=HTMLResponse)
+@app.get("/app", response_class=HTMLResponse)
+async def serve_frontend():
+    """Serve the frontend application."""
+    try:
+        frontend_path = Path("/app/frontend/index.html")
+        logger.info(f"Attempting to serve frontend from: {frontend_path}")
+        logger.info(f"File exists: {frontend_path.exists()}")
+        
+        if frontend_path.exists():
+            with open(frontend_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                logger.info(f"Successfully read {len(content)} characters")
+                return HTMLResponse(content=content)
+        else:
+            logger.error(f"Frontend file not found at {frontend_path}")
+            raise HTTPException(status_code=404, detail="Frontend not found")
+    except Exception as e:
+        logger.error(f"Error serving frontend: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/app/{file_path:path}")
+async def serve_static_files(file_path: str):
+    """Serve static frontend files (CSS, JS, images)."""
+    try:
+        file_location = Path(f"/app/frontend/{file_path}")
+        logger.info(f"Attempting to serve static file: {file_location}")
+        
+        if file_location.exists() and file_location.is_file():
+            return FileResponse(file_location)
+        
+        logger.error(f"Static file not found: {file_location}")
+        raise HTTPException(status_code=404, detail="File not found")
+    except Exception as e:
+        logger.error(f"Error serving static file: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

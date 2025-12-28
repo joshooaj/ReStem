@@ -3,51 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demucs Audio Separation</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2em;
-        }
-        
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+    <title>Demucs Audio Separation - Professional Audio Source Separation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1>🎵 Demucs</h1>
+                <p class="subtitle">Separate audio tracks with AI</p>
+                
+                <form id="login-form">
+                    <div id="login-error" class="error-message"></div>
+                    
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required placeholder="you@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required placeholder="••••••••">
+                    </div>
+                    
+                    <button type="submit" class="btn">Sign In</button>
+                </form>
+                
+                <div class="auth-footer">
+                    Don't have an account? <a href="#" id="show-register">Create one</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="register-page" class="page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1>🎵 Demucs</h1>
+                <p class="subtitle">Get 3 free credits to start!</p>
+                
+                <form id="register-form">
+                    <div id="register-error" class="error-message"></div>
+                    
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" required placeholder="you@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" required placeholder="johndoe">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" required placeholder="••••••••">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-confirm-password">Confirm Password</label>
+                        <input type="password" id="register-confirm-password" required placeholder="••••••••">
+                    </div>
+                    
+                    <button type="submit" class="btn">Create Account</button>
+                </form>
+                
+                <div class="auth-footer">
+                    Already have an account? <a href="#" id="show-login">Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <h2>Welcome, <span id="user-name">User</span>!</h2>
+                <p id="user-email">user@example.com</p>
+            </div>
+            <div class="credit-display">
+                <div class="credit-amount"><span id="header-credits">0</span></div>
+                <div class="credit-label">Credits Available</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button id="nav-dashboard" class="nav-btn">Dashboard</button>
+            <button id="nav-upload" class="nav-btn">Upload Audio</button>
+            <button id="nav-purchase" class="nav-btn">Buy Credits</button>
+            <button id="nav-logout" class="nav-btn">Logout</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3>💰 Recent Transactions</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-history">
+                        <tr><td colspan="3" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dashboard-card">
+                <h3>🎵 Your Jobs</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Model</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="job-list">
+                        <tr><td colspan="5" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Page -->
+    <div id="upload-page" class="page">
+        <div class="upload-container">
+            <div class="upload-card">
+                <h2>🎵 Upload Audio</h2>
+                <p class="subtitle">Separate vocals, drums, bass, and other instruments (Costs 1 credit)</p>
+                
+                <form id="upload-form">
+                    <div id="upload-error" class="error-message"></div>
+                    
+                    <div class="upload-area" onclick="document.getElementById('audio-file').click()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <h3>Click to select audio file</h3>
+                        <p>MP3, WAV, FLAC, OGG - Max 100MB</p>
+                        <input type="file" id="audio-file" accept="audio/*" style="display: none;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model-select">Separation Model</label>
+                        <select id="model-select" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
+                            <option value="htdemucs">HTDemucs (Best Quality - 4 stems)</option>
+                            <option value="htdemucs_ft">HTDemucs Fine-Tuned (Faster)</option>
+                            <option value="htdemucs_6s">HTDemucs 6-stem (6 stems)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="upload-progress">
+                        <p>⏳ Uploading and processing...</p>
+                    </div>
+                    
+                    <button type="submit" class="btn">Separate Audio (1 Credit)</button>
+                    <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')" style="margin-top: 10px;">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Page -->
+    <div id="purchase-page" class="page">
+        <div class="purchase-container">
+            <div class="purchase-header">
+                <h2>💳 Purchase Credits</h2>
+                <p class="current-balance">Your current balance: <strong><span id="credit-balance">0</span> credits</strong></p>
+                <p class="subtitle">1 credit = 1 audio separation</p>
+            </div>
+
+            <div class="pricing-grid">
+                <div class="pricing-card" onclick="purchaseCredits(5, 1.00)">
+                    <h3>Starter</h3>
+                    <div class="pricing-amount">5</div>
+                    <div class="pricing-credits">credits</div>
+                    <div class="pricing-price">$1.00</div>
+                    <div class="pricing-per-credit">$0.20 per credit</div>
+                    <button class="btn">Buy Now</button>
+                </div>
+
+                <div class="pricing-card featured" onclick="purchaseCredits(25, 4.00)">
+                    <div class="pricing-badge">BEST VALUE</div>
+                    <h3>Popular</h3>
+                    <div class="pricing-amount">25</div>
+                    <div class="pricing-credits">credits</div>
+                    <div class="pricing-price">$4.00</div>
+                    <div class="pricing-per-credit">$0.16 per credit</div>
+                    <button class="btn">Buy Now</button>
+                </div>
+
+                <div class="pricing-card" onclick="purchaseCredits(100, 15.00)">
+                    <h3>Pro</h3>
+                    <div class="pricing-amount">100</div>
+                    <div class="pricing-credits">credits</div>
+                    <div class="pricing-price">$15.00</div>
+                    <div class="pricing-per-credit">$0.15 per credit</div>
+                    <button class="btn">Buy Now</button>
+                </div>
+            </div>
+
+            <div class="dashboard-card" style="text-align: center;">
+                <h3>🔒 Secure Payment with Square</h3>
+                <p style="color: #6b7280; margin-bottom: 20px;">All transactions are encrypted and secure. We never store your payment information.</p>
+                <div id="square-payment-form">
+                    <!-- Square payment form will be integrated here in Phase 2 -->
+                    <p style="color: #3b82f6; font-style: italic;">Payment processing integration coming soon...</p>
+                </div>
+                <button class="btn btn-secondary" onclick="showPage('dashboard')" style="max-width: 200px; margin: 20px auto;">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
             margin-bottom: 20px;
         }
         
