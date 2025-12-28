@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demucs Audio Separation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area.dragging {
+            background: #f0f4ff;
+            border-color: #764ba2;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .progress {
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .file-info {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Audio Separator</h1>
+        <p class="subtitle">Separate any song into vocals, drums, bass, and other instruments</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🎸</div>
+            <p><strong>Click to upload</strong> or drag and drop</p>
+            <p style="color: #999; font-size: 0.9em; margin-top: 10px;">
+                MP3, WAV, FLAC, OGG, M4A, AAC
+            </p>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+        
+        <div class="file-info" id="fileInfo">
+            <strong>Selected:</strong> <span id="fileName"></span>
+        </div>
+        
+        <button id="uploadBtn" disabled>Upload & Process</button>
+        
+        <div class="status" id="status">
+            <div id="statusText"></div>
+            <div class="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const progressFill = document.getElementById('progressFill');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        
+        let selectedFile = null;
+        let currentJobId = null;
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        // File selected
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                fileName.textContent = selectedFile.name;
+                fileInfo.classList.add('show');
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            
+            if (e.dataTransfer.files.length > 0) {
+                selectedFile = e.dataTransfer.files[0];
+                fileName.textContent = selectedFile.name;
+                fileInfo.classList.add('show');
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        // Upload and process
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            uploadBtn.disabled = true;
+            showStatus('pending', 'Uploading file...');
+            
+            try {
+                // Upload file
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+                
+                const job = await response.json();
+                currentJobId = job.job_id;
+                
+                showStatus('processing', 'Processing audio... This may take several minutes.');
+                progressFill.style.width = '50%';
+                
+                // Poll for completion
+                await pollJobStatus(currentJobId);
+                
+            } catch (error) {
+                showStatus('error', `Error: ${error.message}`);
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        async function pollJobStatus(jobId) {
+            while (true) {
+                try {
+                    const response = await fetch(`${API_URL}/status/${jobId}`);
+                    const job = await response.json();
+                    
+                    if (job.status === 'completed') {
+                        progressFill.style.width = '100%';
+                        showStatus('completed', 'Processing complete! Downloading...');
+                        
+                        // Download result
+                        window.location.href = `${API_URL}/download/${jobId}`;
+                        
+                        setTimeout(() => {
+                            showStatus('completed', 'Download started! Check your downloads folder.');
+                            uploadBtn.disabled = false;
+                            selectedFile = null;
+                            fileInfo.classList.remove('show');
+                        }, 1000);
+                        
+                        break;
+                        
+                    } else if (job.status === 'failed') {
+                        showStatus('error', `Processing failed: ${job.error || 'Unknown error'}`);
+                        uploadBtn.disabled = false;
+                        break;
+                        
+                    } else {
+                        // Still processing
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
+                    
+                } catch (error) {
+                    showStatus('error', `Error checking status: ${error.message}`);
+                    uploadBtn.disabled = false;
+                    break;
+                }
+            }
+        }
+        
+        function showStatus(type, message) {
+            status.className = `status show ${type}`;
+            statusText.textContent = message;
+            
+            if (type === 'completed' || type === 'error') {
+                progressFill.style.animation = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

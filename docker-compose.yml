@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend
+    container_name: demucs-backend
+    ports:
+      - "8000:80"
+    volumes:
+      - demucs-completed:/app/completed
+      - demucs-uploads:/app/uploads
+    environment:
+      - PYTHONUNBUFFERED=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  demucs-completed:
+    driver: local
+  demucs-uploads:
+    driver: local
