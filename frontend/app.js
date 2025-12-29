@@ -350,7 +350,6 @@ async function loadJobList() {
             const data = await response.json();
             const jobs = data.jobs || [];
             const tbody = document.getElementById('job-list');
-            tbody.innerHTML = '';
 
             if (jobs.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No jobs yet</td></tr>';
@@ -370,8 +369,16 @@ async function loadJobList() {
                 stopJobPolling();
             }
 
+            // Build a map of existing rows by job ID
+            const existingRows = new Map();
+            const rows = Array.from(tbody.querySelectorAll('tr[data-job-id]'));
+            rows.forEach(row => {
+                const jobId = row.getAttribute('data-job-id');
+                existingRows.set(jobId, row);
+            });
+
             jobs.forEach(job => {
-                const row = document.createElement('tr');
+                const existingRow = existingRows.get(job.id);
                 const statusClass = `status-${job.status.toLowerCase()}`;
                 
                 // Add visual indicator for processing jobs
@@ -380,7 +387,7 @@ async function loadJobList() {
                     statusBadge += ' <span style="animation: pulse 1.5s infinite;">⏳</span>';
                 }
                 
-                row.innerHTML = `
+                const rowHTML = `
                     <td>${job.filename}</td>
                     <td>${job.model}</td>
                     <td>${statusBadge}</td>
@@ -393,22 +400,60 @@ async function loadJobList() {
                         }
                     </td>
                 `;
-                tbody.appendChild(row);
-                
-                // Add expandable row for stems (hidden by default)
-                if (job.status.toUpperCase() === 'COMPLETED') {
-                    const detailsRow = document.createElement('tr');
-                    detailsRow.id = `job-details-${job.id}`;
-                    detailsRow.style.display = 'none';
-                    detailsRow.innerHTML = `
-                        <td colspan="5" style="padding: 20px; background: #f9fafb;">
-                            <div id="stems-${job.id}" style="display: flex; flex-direction: column; gap: 15px;">
-                                <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(detailsRow);
+
+                if (existingRow) {
+                    // Only update if status changed
+                    const currentStatus = existingRow.getAttribute('data-status');
+                    if (currentStatus !== job.status) {
+                        existingRow.innerHTML = rowHTML;
+                        existingRow.setAttribute('data-status', job.status);
+                        
+                        // If job just completed, add the details row
+                        if (job.status.toUpperCase() === 'COMPLETED' && !document.getElementById(`job-details-${job.id}`)) {
+                            const detailsRow = document.createElement('tr');
+                            detailsRow.id = `job-details-${job.id}`;
+                            detailsRow.style.display = 'none';
+                            detailsRow.innerHTML = `
+                                <td colspan="5" style="padding: 20px; background: #f9fafb;">
+                                    <div id="stems-${job.id}" style="display: flex; flex-direction: column; gap: 15px;">
+                                        <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
+                                    </div>
+                                </td>
+                            `;
+                            existingRow.insertAdjacentElement('afterend', detailsRow);
+                        }
+                    }
+                    existingRows.delete(job.id);
+                } else {
+                    // New job - add it
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-job-id', job.id);
+                    row.setAttribute('data-status', job.status);
+                    row.innerHTML = rowHTML;
+                    tbody.insertBefore(row, tbody.firstChild);
+                    
+                    // Add expandable row for stems if completed
+                    if (job.status.toUpperCase() === 'COMPLETED') {
+                        const detailsRow = document.createElement('tr');
+                        detailsRow.id = `job-details-${job.id}`;
+                        detailsRow.style.display = 'none';
+                        detailsRow.innerHTML = `
+                            <td colspan="5" style="padding: 20px; background: #f9fafb;">
+                                <div id="stems-${job.id}" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
+                                </div>
+                            </td>
+                        `;
+                        row.insertAdjacentElement('afterend', detailsRow);
+                    }
                 }
+            });
+
+            // Remove any jobs that no longer exist
+            existingRows.forEach((row, jobId) => {
+                row.remove();
+                const detailsRow = document.getElementById(`job-details-${jobId}`);
+                if (detailsRow) detailsRow.remove();
             });
         }
     } catch (error) {
