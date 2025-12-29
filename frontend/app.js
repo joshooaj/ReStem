@@ -506,12 +506,37 @@ window.showJobDetails = async function(jobId) {
                                     Download
                                 </button>
                             </div>
-                            <audio controls style="width: 100%;" preload="none">
-                                <source src="${API_URL}${stem.url}" type="audio/mpeg">
-                                Your browser does not support the audio element.
+                            <audio id="audio-${jobId}-${stem.name}" controls style="width: 100%;" preload="none">
+                                Loading...
                             </audio>
                         </div>
                     `).join('');
+                    
+                    // Fetch each audio file as blob and create object URLs
+                    for (const stem of stems) {
+                        const audioElement = document.getElementById(`audio-${jobId}-${stem.name}`);
+                        try {
+                            const audioResponse = await fetch(`${API_URL}${stem.url}`, {
+                                headers: { 'Authorization': `Bearer ${currentToken}` }
+                            });
+                            
+                            if (audioResponse.ok) {
+                                const blob = await audioResponse.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                audioElement.src = url;
+                                
+                                // Clean up object URL when audio is loaded
+                                audioElement.addEventListener('loadeddata', () => {
+                                    // URL will be revoked when page unloads
+                                }, { once: true });
+                            } else {
+                                audioElement.outerHTML = '<p style="color: #ef4444; margin: 0;">Failed to load audio</p>';
+                            }
+                        } catch (error) {
+                            console.error(`Failed to load stem ${stem.name}:`, error);
+                            audioElement.outerHTML = '<p style="color: #ef4444; margin: 0;">Error loading audio</p>';
+                        }
+                    }
                 } else {
                     stemsDiv.innerHTML = '<p style="color: #ef4444;">Failed to load stems</p>';
                 }
