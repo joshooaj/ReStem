@@ -369,6 +369,8 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     if (stemCount === '2') {
         formData.append('two_stem_type', twoStemType);
     }
+    
+    console.log('Upload params:', { model, stem_count: stemCount, two_stem_type: stemCount === '2' ? twoStemType : 'N/A' });
 
     try {
         progressDiv.style.display = 'block';

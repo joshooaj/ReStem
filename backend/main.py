@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Optional
 
 import aiofiles
-from fastapi import FastAPI, File, HTTPException, UploadFile, BackgroundTasks, Depends
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -210,7 +210,7 @@ async def process_audio_file(job_id: str, input_path: Path, db_session_maker):
         
         # Add two-stem mode if requested
         if job.stem_count == 2 and job.two_stem_type:
-            cmd.extend(["--two-stems", job.two_stem_type])
+            cmd.append(f"--two-stems={job.two_stem_type}")
             logger.info(f"Using 2-stem mode: {job.two_stem_type}")
         
         # Add model if specified
@@ -509,9 +509,9 @@ async def get_credit_history(
 async def upload_audio(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    model: str = "htdemucs",
-    stem_count: int = 4,
-    two_stem_type: Optional[str] = None,
+    model: str = Form("htdemucs"),
+    stem_count: int = Form(4),
+    two_stem_type: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -590,11 +590,11 @@ async def upload_audio(
     db.add(job)
     db.commit()
     
+    logger.info(f"Job {job_id} created for user {current_user.id}: model={model}, stem_count={stem_count}, two_stem_type={two_stem_type}")
+    
     # Start background processing
     from database import SessionLocal
     background_tasks.add_task(process_audio_file, job_id, upload_path, SessionLocal)
-    
-    logger.info(f"Job {job_id} created for user {current_user.id}")
     
     return JobResponse(
         id=job.id,
