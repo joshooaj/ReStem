@@ -1113,7 +1113,7 @@ async function viewAdminUser(userId) {
         const txHtml = user.transactions && user.transactions.length > 0 ? user.transactions.map(tx => `
             <tr>
                 <td>${tx.amount > 0 ? '+' : ''}${tx.amount}</td>
-                <td>${tx.reason}</td>
+                <td>${tx.description}</td>
                 <td>${new Date(tx.created_at).toLocaleString()}</td>
             </tr>
         `).join('') : '<tr><td colspan="3">No transactions</td></tr>';
@@ -1136,22 +1136,25 @@ async function adjustCredits(userId) {
     const amount = prompt('Enter credit adjustment (positive or negative):');
     if (amount === null) return;
     
-    const credits = parseInt(amount);
+    const credits = parseFloat(amount);
     if (isNaN(credits)) {
         showNotification('Invalid amount', 'error');
         return;
     }
     
-    const reason = prompt('Reason for adjustment:') || 'Admin adjustment';
+    const description = prompt('Reason for adjustment:') || 'Admin adjustment';
     
     try {
+        const formData = new FormData();
+        formData.append('amount', credits.toString());
+        formData.append('description', description);
+        
         const response = await fetch(`${API_URL}/admin/users/${userId}/credits`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify({ amount: credits, reason })
+            body: formData
         });
         
         if (!response.ok) {
