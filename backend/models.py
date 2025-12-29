@@ -23,6 +23,8 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     credits = Column(Float, default=0.0, nullable=False)
+    is_admin = Column(Integer, default=0, nullable=False)  # 0 = regular user, 1 = admin
+    active = Column(Integer, default=1, nullable=False)  # 0 = disabled, 1 = active
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -60,6 +62,7 @@ class Job(Base):
     status = Column(Enum(JobStatus), default=JobStatus.PENDING, nullable=False)
     error_message = Column(Text, nullable=True)
     cost = Column(Float, default=1.0, nullable=False)  # Credits deducted
+    archived = Column(Integer, default=0, nullable=False)  # 0 = active, 1 = archived (files deleted)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)

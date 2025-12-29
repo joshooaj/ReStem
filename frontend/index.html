@@ -226,6 +226,7 @@
                 <div class="credit-amount"><span id="header-credits">0</span></div>
                 <div class="credit-label">Credits Available</div>
             </div>
+            <button id="admin-button" style="display: none;" class="buy-credits-btn" onclick="showPage('admin')">Admin</button>
         </div>
 
         <div class="nav-buttons">
@@ -396,6 +397,125 @@
                     <tbody id="transaction-history">
                         <tr><td colspan="3" style="text-align: center; color: #999;">Loading...</td></tr>
                     </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Page -->
+    <div id="admin-page" class="page">
+        <div class="dashboard-header">
+            <h1 class="clickable-logo" onclick="goHome()"><span class="logo">🎚️</span> Mux Minus</h1>
+            <div class="user-info">
+                <h2>Admin Panel</h2>
+                <p id="admin-user-email">admin@example.com</p>
+            </div>
+            <div class="credit-display">
+                <div class="credit-amount">👑</div>
+                <div class="credit-label">Administrator</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button id="nav-admin-users" class="nav-btn active">Users</button>
+            <button id="nav-admin-jobs" class="nav-btn">All Jobs</button>
+            <button id="nav-admin-dashboard" class="nav-btn">Dashboard</button>
+            <button id="nav-admin-logout" class="nav-btn">Logout</button>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="admin-users-tab" class="admin-tab">
+            <div class="dashboard-card">
+                <h3>👥 User Management</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Credits</th>
+                            <th>Admin</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-tbody">
+                        <tr><td colspan="7" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Jobs Tab -->
+        <div id="admin-jobs-tab" class="admin-tab" style="display: none;">
+            <div class="dashboard-card">
+                <h3>🎵 All Jobs</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Filename</th>
+                            <th>Status</th>
+                            <th>Archived</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-jobs-tbody">
+                        <tr><td colspan="8" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin User Detail Modal -->
+    <div id="admin-user-detail-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>User Details</h2>
+                <button class="modal-close" onclick="closeAdminUserModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px;">
+                    <p><strong>ID:</strong> <span id="admin-user-id"></span></p>
+                    <p><strong>Username:</strong> <span id="admin-user-username"></span></p>
+                    <p><strong>Email:</strong> <span id="admin-user-email"></span></p>
+                    <p><strong>Credits:</strong> <span id="admin-user-credits"></span></p>
+                    <p><strong>Status:</strong> <span id="admin-user-status"></span></p>
+                    <p><strong>Admin:</strong> <span id="admin-user-admin"></span></p>
+                    <p><strong>Created:</strong> <span id="admin-user-created"></span></p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="buy-credits-btn" onclick="adjustCredits(document.getElementById('admin-user-id').textContent)">Adjust Credits</button>
+                    <button class="buy-credits-btn" onclick="toggleUserActive(document.getElementById('admin-user-id').textContent)">Toggle Active</button>
+                </div>
+                
+                <h3>Recent Jobs</h3>
+                <table id="admin-user-jobs">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <h3>Transaction History</h3>
+                <table id="admin-user-transactions">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <th>Reason</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>

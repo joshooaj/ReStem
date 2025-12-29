@@ -989,6 +989,22 @@ tbody tr:hover {
     opacity: 0.5;
 }
 
+/* Admin Page Styles */
+.admin-tab {
+    display: none;
+}
+
+.nav-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+#admin-button {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
 @media (max-width: 768px) {
     .footer-content p {
         flex-direction: column;

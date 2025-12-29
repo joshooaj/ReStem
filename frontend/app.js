@@ -15,7 +15,8 @@ const pages = {
     login: document.getElementById('login-page'),
     register: document.getElementById('register-page'),
     dashboard: document.getElementById('dashboard-page'),
-    purchase: document.getElementById('purchase-page')
+    purchase: document.getElementById('purchase-page'),
+    admin: document.getElementById('admin-page')
 };
 
 function showPage(pageName) {
@@ -35,6 +36,8 @@ function showPage(pageName) {
             path = '/dashboard';
         } else if (pageName === 'purchase') {
             path = '/purchase';
+        } else if (pageName === 'admin') {
+            path = '/admin';
         }
         
         if (window.location.pathname !== path) {
@@ -62,6 +65,8 @@ window.addEventListener('popstate', (event) => {
         // Load page-specific data
         if (event.state.page === 'purchase' && currentToken) {
             loadPurchasePage();
+        } else if (event.state.page === 'admin' && currentToken) {
+            loadAdminPage();
         }
         
         // Stop polling if not on dashboard
@@ -80,6 +85,9 @@ window.addEventListener('popstate', (event) => {
             targetPage = currentToken ? 'dashboard' : 'landing';
         } else if (path === '/purchase') {
             targetPage = currentToken ? 'purchase' : 'landing';
+        } else if (path === '/admin') {
+            targetPage = currentToken ? 'admin' : 'landing';
+            if (currentToken) loadAdminPage();
         } else {
             // Root or unknown path
             targetPage = currentToken ? 'dashboard' : 'landing';
@@ -135,6 +143,12 @@ function updateUserInfo() {
         const credits = currentUser.credits.toFixed(1);
         document.getElementById('header-credits').textContent = credits;
         document.getElementById('header-credits-purchase').textContent = credits;
+        
+        // Show admin button if user is admin
+        const adminButton = document.getElementById('admin-button');
+        if (adminButton) {
+            adminButton.style.display = currentUser.is_admin ? 'block' : 'none';
+        }
     }
 }
 
@@ -909,6 +923,32 @@ document.getElementById('show-login').addEventListener('click', (e) => {
     showPage('login');
 });
 
+// Admin page navigation
+document.getElementById('nav-admin-users').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    document.querySelectorAll('.admin-tab').forEach(tab => tab.style.display = 'none');
+    document.getElementById('admin-users-tab').style.display = 'block';
+    loadAdminUsers();
+});
+
+document.getElementById('nav-admin-jobs').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    document.querySelectorAll('.admin-tab').forEach(tab => tab.style.display = 'none');
+    document.getElementById('admin-jobs-tab').style.display = 'block';
+    loadAdminJobs();
+});
+
+document.getElementById('nav-admin-dashboard').addEventListener('click', (e) => {
+    e.preventDefault();
+    showPage('dashboard');
+});
+
+document.getElementById('nav-admin-logout').addEventListener('click', logout);
+
 // Initialize App
 (async function init() {
     const isAuthenticated = await checkAuth();
@@ -921,6 +961,8 @@ document.getElementById('show-login').addEventListener('click', (e) => {
         targetPage = 'purchase';
     } else if (path === '/dashboard') {
         targetPage = 'dashboard';
+    } else if (path === '/admin') {
+        targetPage = 'admin';
     } else if (path === '/register') {
         targetPage = 'register';
     } else if (path === '/login') {
@@ -933,6 +975,8 @@ document.getElementById('show-login').addEventListener('click', (e) => {
         showPage(targetPage);
         if (targetPage === 'dashboard' || targetPage === 'purchase') {
             await loadDashboard();
+        } else if (targetPage === 'admin') {
+            loadAdminPage();
         }
     } else {
         // Non-authenticated users see landing page by default
@@ -943,3 +987,260 @@ document.getElementById('show-login').addEventListener('click', (e) => {
         }
     }
 })();
+
+// Admin Page Functions
+
+function loadAdminPage() {
+    if (!currentUser || !currentUser.is_admin) {
+        showPage('dashboard');
+        return;
+    }
+    loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+    try {
+        const response = await fetch(`${API_URL}/admin/users`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load users');
+        }
+        
+        const data = await response.json();
+        const users = data.users || data; // Handle both {users: [...]} and direct array
+        const tbody = document.getElementById('admin-users-tbody');
+        
+        if (!tbody) {
+            console.error('admin-users-tbody element not found');
+            throw new Error('Admin users table not found in DOM');
+        }
+        
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td>${user.credits}</td>
+                <td>${user.is_admin ? 'Yes' : 'No'}</td>
+                <td>${user.active ? 'Active' : 'Disabled'}</td>
+                <td>
+                    <button class="action-btn" onclick="viewAdminUser(${user.id})">View</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading users:', error);
+        console.error('Error stack:', error.stack);
+        showNotification('Failed to load users', 'error');
+    }
+}
+
+async function loadAdminJobs() {
+    try {
+        const response = await fetch(`${API_URL}/admin/jobs`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load jobs');
+        }
+        
+        const data = await response.json();
+        const jobs = data.jobs || data; // Handle both {jobs: [...]} and direct array
+        const tbody = document.getElementById('admin-jobs-tbody');
+        
+        tbody.innerHTML = jobs.map(job => `
+            <tr>
+                <td>${job.id}</td>
+                <td>${job.user_id}</td>
+                <td>${job.username || 'Unknown'}</td>
+                <td>${job.filename}</td>
+                <td>${job.status}</td>
+                <td>${job.archived ? 'Yes' : 'No'}</td>
+                <td>${new Date(job.created_at).toLocaleString()}</td>
+                <td>
+                    ${!job.archived ? `<button class="action-btn" onclick="archiveJob('${job.id}')">Archive</button>` : ''}
+                    <button class="action-btn delete-btn" onclick="deleteJob('${job.id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading jobs:', error);
+        showNotification('Failed to load jobs', 'error');
+    }
+}
+
+async function viewAdminUser(userId) {
+    try {
+        const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load user details');
+        }
+        
+        const user = await response.json();
+        
+        document.getElementById('admin-user-id').textContent = user.id;
+        document.getElementById('admin-user-username').textContent = user.username;
+        document.getElementById('admin-user-email').textContent = user.email;
+        document.getElementById('admin-user-credits').textContent = user.credits;
+        document.getElementById('admin-user-status').textContent = user.active ? 'Active' : 'Disabled';
+        document.getElementById('admin-user-admin').textContent = user.is_admin ? 'Yes' : 'No';
+        document.getElementById('admin-user-created').textContent = new Date(user.created_at).toLocaleString();
+        
+        // Render jobs
+        const jobsHtml = user.jobs && user.jobs.length > 0 ? user.jobs.map(job => `
+            <tr>
+                <td>${job.filename}</td>
+                <td>${job.status}</td>
+                <td>${new Date(job.created_at).toLocaleString()}</td>
+            </tr>
+        `).join('') : '<tr><td colspan="3">No jobs</td></tr>';
+        
+        document.querySelector('#admin-user-jobs tbody').innerHTML = jobsHtml;
+        
+        // Render transactions
+        const txHtml = user.transactions && user.transactions.length > 0 ? user.transactions.map(tx => `
+            <tr>
+                <td>${tx.amount > 0 ? '+' : ''}${tx.amount}</td>
+                <td>${tx.reason}</td>
+                <td>${new Date(tx.created_at).toLocaleString()}</td>
+            </tr>
+        `).join('') : '<tr><td colspan="3">No transactions</td></tr>';
+        
+        document.querySelector('#admin-user-transactions tbody').innerHTML = txHtml;
+        
+        // Show modal
+        document.getElementById('admin-user-detail-modal').style.display = 'block';
+    } catch (error) {
+        console.error('Error loading user details:', error);
+        showNotification('Failed to load user details', 'error');
+    }
+}
+
+function closeAdminUserModal() {
+    document.getElementById('admin-user-detail-modal').style.display = 'none';
+}
+
+async function adjustCredits(userId) {
+    const amount = prompt('Enter credit adjustment (positive or negative):');
+    if (amount === null) return;
+    
+    const credits = parseInt(amount);
+    if (isNaN(credits)) {
+        showNotification('Invalid amount', 'error');
+        return;
+    }
+    
+    const reason = prompt('Reason for adjustment:') || 'Admin adjustment';
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/users/${userId}/credits`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount: credits, reason })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to adjust credits');
+        }
+        
+        showNotification('Credits adjusted successfully', 'success');
+        closeAdminUserModal();
+        loadAdminUsers();
+    } catch (error) {
+        console.error('Error adjusting credits:', error);
+        showNotification('Failed to adjust credits', 'error');
+    }
+}
+
+async function toggleUserActive(userId) {
+    if (!confirm('Toggle user active status?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/users/${userId}/toggle-active`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to toggle user status');
+        }
+        
+        showNotification('User status updated', 'success');
+        closeAdminUserModal();
+        loadAdminUsers();
+    } catch (error) {
+        console.error('Error toggling user status:', error);
+        showNotification('Failed to update user status', 'error');
+    }
+}
+
+async function archiveJob(jobId) {
+    if (!confirm('Archive this job? This will delete the audio files but keep the record.')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/jobs/${jobId}/archive`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to archive job');
+        }
+        
+        showNotification('Job archived successfully', 'success');
+        loadAdminJobs();
+    } catch (error) {
+        console.error('Error archiving job:', error);
+        showNotification('Failed to archive job', 'error');
+    }
+}
+
+async function deleteJob(jobId) {
+    if (!confirm('Permanently delete this job? This cannot be undone!')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/jobs/${jobId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete job');
+        }
+        
+        showNotification('Job deleted successfully', 'success');
+        loadAdminJobs();
+    } catch (error) {
+        console.error('Error deleting job:', error);
+        showNotification('Failed to delete job', 'error');
+    }
+}
+
+// Make admin functions globally available
+window.viewAdminUser = viewAdminUser;
+window.closeAdminUserModal = closeAdminUserModal;
+window.adjustCredits = adjustCredits;
+window.toggleUserActive = toggleUserActive;
+window.archiveJob = archiveJob;
+window.deleteJob = deleteJob;

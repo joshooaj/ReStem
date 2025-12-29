@@ -147,6 +147,7 @@ class UserProfile(BaseModel):
     username: str
     credits: float
     created_at: datetime
+    is_admin: int = 0
 
 
 class JobResponse(BaseModel):
@@ -391,7 +392,8 @@ async def get_profile(current_user: User = Depends(get_current_user)):
         email=current_user.email,
         username=current_user.username,
         credits=current_user.credits,
-        created_at=current_user.created_at
+        created_at=current_user.created_at,
+        is_admin=current_user.is_admin
     )
 
 
@@ -882,6 +884,205 @@ async def serve_frontend():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==================== Admin Endpoints ====================
+
+def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency to verify user is an admin."""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+
+@app.get("/admin/users")
+async def admin_list_users(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """List all users (admin only)."""
+    users = db.query(User).all()
+    return {
+        "users": [
+            {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "credits": user.credits,
+                "is_admin": user.is_admin,
+                "active": user.active,
+                "created_at": user.created_at.isoformat(),
+                "job_count": len(user.jobs)
+            }
+            for user in users
+        ]
+    }
+
+
+@app.get("/admin/users/{user_id}")
+async def admin_get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Get detailed user information (admin only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "id": user.id,
+        "email": user.email,
+        "username": user.username,
+        "credits": user.credits,
+        "is_admin": user.is_admin,
+        "active": user.active,
+        "created_at": user.created_at.isoformat(),
+        "updated_at": user.updated_at.isoformat(),
+        "jobs": [
+            {
+                "id": job.id,
+                "filename": job.filename,
+                "model": job.model,
+                "status": job.status.value,
+                "archived": job.archived,
+                "created_at": job.created_at.isoformat()
+            }
+            for job in user.jobs
+        ],
+        "transactions": [
+            {
+                "id": tx.id,
+                "amount": tx.amount,
+                "description": tx.description,
+                "balance_after": tx.balance_after,
+                "created_at": tx.created_at.isoformat()
+            }
+            for tx in user.transactions
+        ]
+    }
+
+
+@app.post("/admin/users/{user_id}/credits")
+async def admin_modify_credits(
+    user_id: int,
+    amount: float = Form(...),
+    description: str = Form("Admin credit adjustment"),
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Modify user credits (admin only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.credits += amount
+    
+    # Log transaction
+    transaction = CreditTransaction(
+        user_id=user.id,
+        amount=amount,
+        balance_after=user.credits,
+        description=description,
+        reference=f"admin:{admin.id}"
+    )
+    db.add(transaction)
+    db.commit()
+    
+    return {"success": True, "new_balance": user.credits}
+
+
+@app.post("/admin/users/{user_id}/toggle-active")
+async def admin_toggle_user_active(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Enable/disable user account (admin only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.is_admin:
+        raise HTTPException(status_code=400, detail="Cannot disable admin accounts")
+    
+    user.active = 1 - user.active  # Toggle between 0 and 1
+    db.commit()
+    
+    return {"success": True, "active": user.active}
+
+
+@app.get("/admin/jobs")
+async def admin_list_jobs(
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """List all jobs (admin only)."""
+    jobs = db.query(Job).order_by(Job.created_at.desc()).all()
+    return {
+        "jobs": [
+            {
+                "id": job.id,
+                "user_id": job.user_id,
+                "username": job.user.username if job.user else "Unknown",
+                "filename": job.filename,
+                "model": job.model,
+                "status": job.status.value,
+                "archived": job.archived,
+                "created_at": job.created_at.isoformat(),
+                "completed_at": job.completed_at.isoformat() if job.completed_at else None
+            }
+            for job in jobs
+        ]
+    }
+
+
+@app.post("/admin/jobs/{job_id}/archive")
+async def admin_archive_job(
+    job_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Archive a job by deleting its files (admin only)."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Delete files
+    job_dir = COMPLETED_DIR / job_id
+    if job_dir.exists():
+        shutil.rmtree(job_dir)
+        logger.info(f"Admin archived job {job_id} - files deleted")
+    
+    # Mark as archived
+    job.archived = 1
+    db.commit()
+    
+    return {"success": True, "archived": True}
+
+
+@app.delete("/admin/jobs/{job_id}")
+async def admin_delete_job(
+    job_id: str,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Completely delete a job and its files (admin only)."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Delete files
+    job_dir = COMPLETED_DIR / job_id
+    if job_dir.exists():
+        shutil.rmtree(job_dir)
+        logger.info(f"Admin deleted job {job_id}")
+    
+    # Delete from database
+    db.delete(job)
+    db.commit()
+    
+    return {"success": True, "deleted": True}
+
+
 # Catch-all route for SPA routing - must be last!
 # This allows refreshing on any page like /dashboard, /upload, etc.
 @app.get("/{full_path:path}", response_class=HTMLResponse)
@@ -889,7 +1090,7 @@ async def catch_all(full_path: str):
     """Catch-all route to serve index.html for SPA routing."""
     # Skip if this looks like an API call or static file
     if full_path.startswith(("api/", "auth/", "upload", "jobs", "status/", "download/", 
-                             "stems/", "credits/", "demo/")) or "." in full_path:
+                             "stems/", "credits/", "demo/", "admin/")) or "." in full_path:
         raise HTTPException(status_code=404, detail="Not Found")
     
     # Serve index.html for all other routes (SPA routing)
