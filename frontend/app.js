@@ -1,4 +1,4 @@
-// ReStem - Main Application
+// Mux Minus - Main Application
 // Use empty string for relative URLs (works with reverse proxy)
 const API_URL = '';
 let currentToken = localStorage.getItem('token');

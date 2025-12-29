@@ -73,7 +73,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:8000",
         "http://localhost",
-        "https://restem.joshooaj.com",
+        "https://muxminus.com",
+        "https://www.muxminus.com",
         "*"  # Fallback for development
     ],
     allow_credentials=True,
@@ -436,7 +437,7 @@ async def purchase_credits(
                 "currency": "USD"
             },
             location_id=SQUARE_LOCATION_ID,
-            note=f"ReStem Credit Purchase - {purchase.amount} credits",
+            note=f"Mux Minus Credit Purchase - {purchase.amount} credits",
             buyer_email_address=current_user.email,
         )
         
@@ -736,7 +737,7 @@ async def stream_stem(
             raise HTTPException(status_code=404, detail=f"Stem '{stem_name}' not found")
         
         # Extract to temp file
-        temp_dir = Path(tempfile.gettempdir()) / "restem_stems"
+        temp_dir = Path(tempfile.gettempdir()) / "muxminus_stems"
         temp_dir.mkdir(exist_ok=True)
         temp_file = temp_dir / f"{job_id}_{stem_name}.mp3"
         
@@ -817,7 +818,7 @@ async def list_jobs(
 async def api_info():
     """API information endpoint."""
     return {
-        "service": "ReStem Audio Separation API",
+        "service": "Mux Minus Audio Separation API",
         "status": "running",
         "version": "2.0.0",
         "features": ["authentication", "credit_system", "job_tracking"]

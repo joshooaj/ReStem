@@ -1,6 +1,6 @@
 # Square Payment Integration Guide
 
-This guide will help you set up Square payments for ReStem credit purchases.
+This guide will help you set up Square payments for Mux Minus credit purchases.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ This guide will help you set up Square payments for ReStem credit purchases.
 
 1. In the Square Developer Dashboard, go to **Applications**
 2. Click **+ Create Your First Application** (or **+ New Application**)
-3. Give your application a name (e.g., "ReStem")
+3. Give your application a name (e.g., "Mux Minus")
 4. Click **Save**
 
 ## Step 3: Get Your Credentials
@@ -38,9 +38,9 @@ This guide will help you set up Square payments for ReStem credit purchases.
 3. Click on **Locations**
 4. Copy the **Location ID** for your test location
 
-## Step 4: Configure ReStem
+## Step 4: Configure Mux Minus
 
-1. In your ReStem project directory, copy `.env.example` to `.env`:
+1. In your Mux Minus project directory, copy `.env.example` to `.env`:
    ```bash
    cp .env.example .env
    ```
