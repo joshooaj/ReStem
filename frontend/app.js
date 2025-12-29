@@ -15,7 +15,6 @@ const pages = {
     login: document.getElementById('login-page'),
     register: document.getElementById('register-page'),
     dashboard: document.getElementById('dashboard-page'),
-    upload: document.getElementById('upload-page'),
     purchase: document.getElementById('purchase-page')
 };
 
@@ -34,8 +33,6 @@ function showPage(pageName) {
             path = '/register';
         } else if (pageName === 'dashboard') {
             path = '/dashboard';
-        } else if (pageName === 'upload') {
-            path = '/upload';
         } else if (pageName === 'purchase') {
             path = '/purchase';
         }
@@ -76,8 +73,6 @@ window.addEventListener('popstate', (event) => {
             targetPage = 'register';
         } else if (path === '/dashboard') {
             targetPage = currentToken ? 'dashboard' : 'landing';
-        } else if (path === '/upload') {
-            targetPage = currentToken ? 'upload' : 'landing';
         } else if (path === '/purchase') {
             targetPage = currentToken ? 'purchase' : 'landing';
         } else {
@@ -821,10 +816,6 @@ document.getElementById('nav-dashboard').addEventListener('click', () => {
     loadDashboard();
 });
 
-document.getElementById('nav-upload').addEventListener('click', () => {
-    showPage('upload');
-});
-
 document.getElementById('nav-purchase').addEventListener('click', () => {
     showPage('purchase');
 });
@@ -849,9 +840,7 @@ document.getElementById('show-login').addEventListener('click', (e) => {
     const path = window.location.pathname;
     let targetPage = 'dashboard';
     
-    if (path === '/upload') {
-        targetPage = 'upload';
-    } else if (path === '/purchase' || path === '/credits') {
+    if (path === '/purchase' || path === '/credits') {
         targetPage = 'purchase';
     } else if (path === '/dashboard') {
         targetPage = 'dashboard';
@@ -865,7 +854,7 @@ document.getElementById('show-login').addEventListener('click', (e) => {
     
     if (isAuthenticated) {
         showPage(targetPage);
-        if (targetPage === 'dashboard' || targetPage === 'upload' || targetPage === 'purchase') {
+        if (targetPage === 'dashboard' || targetPage === 'purchase') {
             await loadDashboard();
         }
     } else {

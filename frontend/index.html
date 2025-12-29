@@ -229,9 +229,59 @@
 
         <div class="nav-buttons">
             <button id="nav-dashboard" class="nav-btn">Dashboard</button>
-            <button id="nav-upload" class="nav-btn">Upload Audio</button>
             <button id="nav-purchase" class="nav-btn">Buy Credits</button>
             <button id="nav-logout" class="nav-btn">Logout</button>
+        </div>
+
+        <!-- Upload Audio Form -->
+        <div class="dashboard-card" style="margin-bottom: 30px;">
+            <h3>🎙️ Upload Audio</h3>
+            <p class="subtitle" style="margin-bottom: 20px;">Separate vocals, drums, bass, and other instruments (Costs 1 credit)</p>
+            
+            <form id="upload-form">
+                <div id="upload-error" class="error-message"></div>
+                
+                <div class="upload-area" onclick="document.getElementById('audio-file').click()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <h3>Click to select audio file</h3>
+                    <p>MP3, WAV, FLAC, OGG - Max 100MB</p>
+                    <input type="file" id="audio-file" accept="audio/*" style="display: none;">
+                </div>
+                
+                <div class="form-group">
+                    <label for="stem-count">Number of Stems</label>
+                    <select id="stem-count" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
+                        <option value="4">4 Stems (Vocals, Drums, Bass, Other)</option>
+                        <option value="2">2 Stems (Karaoke Mode - Faster)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="two-stem-option" style="display: none;">
+                    <label for="two-stem-type">Isolate Which Stem?</label>
+                    <select id="two-stem-type" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
+                        <option value="vocals">Vocals (Remove Instruments)</option>
+                        <option value="drums">Drums (Remove Everything Else)</option>
+                        <option value="bass">Bass (Remove Everything Else)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="model-select">Separation Model</label>
+                    <select id="model-select" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
+                        <option value="htdemucs">HTDemucs (Best Quality)</option>
+                        <option value="htdemucs_ft">HTDemucs Fine-Tuned (Faster)</option>
+                        <option value="htdemucs_6s">HTDemucs 6-stem</option>
+                    </select>
+                </div>
+                
+                <div id="upload-progress">
+                    <p>⏳ Uploading and processing...</p>
+                </div>
+                
+                <button type="submit" class="btn">Separate Audio (1 Credit)</button>
+            </form>
         </div>
 
         <div class="dashboard-grid">
@@ -251,62 +301,6 @@
                         <tr><td colspan="5" style="text-align: center; color: #999;">Loading...</td></tr>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upload Page -->
-    <div id="upload-page" class="page">
-        <div class="upload-container">
-            <div class="upload-card">
-                <h2>�️ Upload Audio</h2>
-                <p class="subtitle">Separate vocals, drums, bass, and other instruments (Costs 1 credit)</p>
-                
-                <form id="upload-form">
-                    <div id="upload-error" class="error-message"></div>
-                    
-                    <div class="upload-area" onclick="document.getElementById('audio-file').click()">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <h3>Click to select audio file</h3>
-                        <p>MP3, WAV, FLAC, OGG - Max 100MB</p>
-                        <input type="file" id="audio-file" accept="audio/*" style="display: none;">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="stem-count">Number of Stems</label>
-                        <select id="stem-count" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
-                            <option value="4">4 Stems (Vocals, Drums, Bass, Other)</option>
-                            <option value="2">2 Stems (Karaoke Mode - Faster)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" id="two-stem-option" style="display: none;">
-                        <label for="two-stem-type">Isolate Which Stem?</label>
-                        <select id="two-stem-type" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
-                            <option value="vocals">Vocals (Remove Instruments)</option>
-                            <option value="drums">Drums (Remove Everything Else)</option>
-                            <option value="bass">Bass (Remove Everything Else)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="model-select">Separation Model</label>
-                        <select id="model-select" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 1rem;">
-                            <option value="htdemucs">HTDemucs (Best Quality)</option>
-                            <option value="htdemucs_ft">HTDemucs Fine-Tuned (Faster)</option>
-                            <option value="htdemucs_6s">HTDemucs 6-stem</option>
-                        </select>
-                    </div>
-                    
-                    <div id="upload-progress">
-                        <p>⏳ Uploading and processing...</p>
-                    </div>
-                    
-                    <button type="submit" class="btn">Separate Audio (1 Credit)</button>
-                    <button type="button" class="btn btn-secondary" onclick="showPage('dashboard')" style="margin-top: 10px;">Cancel</button>
-                </form>
             </div>
         </div>
     </div>
