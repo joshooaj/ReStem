@@ -458,6 +458,7 @@ tbody tr:hover {
     display: flex;
     flex-direction: column;
     min-height: 400px;
+    min-width: 250px;
 }
 
 .pricing-card:hover {
