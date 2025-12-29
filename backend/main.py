@@ -314,6 +314,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     Register a new user account.
     
     New users receive 3 free credits to try the service.
+    The first registered user is automatically granted admin privileges.
     """
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
@@ -325,13 +326,18 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     if existing_username:
         raise HTTPException(status_code=400, detail="Username already taken")
     
+    # Check if this is the first user
+    user_count = db.query(User).count()
+    is_first_user = user_count == 0
+    
     # Create new user with 3 free credits
     hashed_password = get_password_hash(user_data.password)
     new_user = User(
         email=user_data.email,
         username=user_data.username,
         hashed_password=hashed_password,
-        credits=3.0  # Free trial credits
+        credits=3.0,  # Free trial credits
+        is_admin=1 if is_first_user else 0  # First user is admin
     )
     db.add(new_user)
     db.commit()
@@ -348,7 +354,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.add(transaction)
     db.commit()
     
-    logger.info(f"New user registered: {user_data.email}")
+    logger.info(f"New user registered: {user_data.email}" + (" (ADMIN)" if is_first_user else ""))
     
     # Create access token (JWT spec requires 'sub' to be a string)
     access_token = create_access_token(data={"sub": str(new_user.id)})
