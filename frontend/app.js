@@ -25,7 +25,21 @@ function showPage(pageName) {
         pages[pageName].style.display = 'block';
         
         // Update URL without reloading the page
-        const path = pageName === 'login' || pageName === 'register' ? '/' : `/${pageName}`;
+        let path = '/';
+        if (pageName === 'landing') {
+            path = '/';
+        } else if (pageName === 'login') {
+            path = '/login';
+        } else if (pageName === 'register') {
+            path = '/register';
+        } else if (pageName === 'dashboard') {
+            path = '/dashboard';
+        } else if (pageName === 'upload') {
+            path = '/upload';
+        } else if (pageName === 'purchase') {
+            path = '/purchase';
+        }
+        
         if (window.location.pathname !== path) {
             window.history.pushState({ page: pageName }, '', path);
         }
@@ -39,6 +53,8 @@ function showPage(pageName) {
 
 // Handle browser back/forward buttons
 window.addEventListener('popstate', (event) => {
+    const path = window.location.pathname;
+    
     if (event.state && event.state.page) {
         // Show the page without updating history (to avoid duplicate entries)
         Object.values(pages).forEach(page => page.style.display = 'none');
@@ -51,11 +67,31 @@ window.addEventListener('popstate', (event) => {
             stopJobPolling();
         }
     } else {
-        // Handle root path - check if user is logged in
-        if (currentToken) {
-            showPage('dashboard');
+        // No state - determine page from URL path
+        let targetPage = 'landing';
+        
+        if (path === '/login') {
+            targetPage = 'login';
+        } else if (path === '/register') {
+            targetPage = 'register';
+        } else if (path === '/dashboard') {
+            targetPage = currentToken ? 'dashboard' : 'landing';
+        } else if (path === '/upload') {
+            targetPage = currentToken ? 'upload' : 'landing';
+        } else if (path === '/purchase') {
+            targetPage = currentToken ? 'purchase' : 'landing';
         } else {
-            showPage('login');
+            // Root or unknown path
+            targetPage = currentToken ? 'dashboard' : 'landing';
+        }
+        
+        Object.values(pages).forEach(page => page.style.display = 'none');
+        if (pages[targetPage]) {
+            pages[targetPage].style.display = 'block';
+        }
+        
+        if (targetPage !== 'dashboard') {
+            stopJobPolling();
         }
     }
 });
@@ -63,7 +99,6 @@ window.addEventListener('popstate', (event) => {
 // Authentication Check
 async function checkAuth() {
     if (!currentToken) {
-        showPage('login');
         return false;
     }
 
@@ -79,12 +114,10 @@ async function checkAuth() {
         } else {
             localStorage.removeItem('token');
             currentToken = null;
-            showPage('login');
             return false;
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        showPage('login');
         return false;
     }
 }

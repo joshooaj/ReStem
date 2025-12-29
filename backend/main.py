@@ -882,6 +882,28 @@ async def serve_frontend():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Catch-all route for SPA routing - must be last!
+# This allows refreshing on any page like /dashboard, /upload, etc.
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def catch_all(full_path: str):
+    """Catch-all route to serve index.html for SPA routing."""
+    # Skip if this looks like an API call or static file
+    if full_path.startswith(("api/", "auth/", "upload", "jobs", "status/", "download/", 
+                             "stems/", "credits/", "demo/")) or "." in full_path:
+        raise HTTPException(status_code=404, detail="Not Found")
+    
+    # Serve index.html for all other routes (SPA routing)
+    try:
+        frontend_path = Path("/app/frontend/index.html")
+        if frontend_path.exists():
+            with open(frontend_path, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+        raise HTTPException(status_code=404, detail="Frontend not found")
+    except Exception as e:
+        logger.error(f"Error in catch-all route: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=80)
