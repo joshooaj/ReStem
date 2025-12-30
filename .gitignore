@@ -5,3 +5,4 @@ backend/files/
 **/node_modules/
 .env
 **/demo/
+docker-compose.override.yml
