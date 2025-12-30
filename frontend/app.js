@@ -442,6 +442,72 @@ window.updatePassword = async function(event) {
     }
 };
 
+// Show Delete Account Modal
+window.showDeleteAccountModal = function() {
+    const modal = document.getElementById('delete-account-modal');
+    const errorDiv = document.getElementById('delete-error');
+    const passwordField = document.getElementById('delete-password');
+    
+    // Clear form and errors
+    passwordField.value = '';
+    errorDiv.textContent = '';
+    errorDiv.style.display = 'none';
+    
+    modal.style.display = 'flex';
+};
+
+// Close Delete Account Modal
+window.closeDeleteAccountModal = function() {
+    const modal = document.getElementById('delete-account-modal');
+    modal.style.display = 'none';
+};
+
+// Confirm Delete Account
+window.confirmDeleteAccount = async function(event) {
+    event.preventDefault();
+    const errorDiv = document.getElementById('delete-error');
+    const password = document.getElementById('delete-password').value;
+    
+    errorDiv.textContent = '';
+    errorDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_URL}/auth/account`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.detail || 'Failed to delete account');
+        }
+        
+        // Close modal
+        closeDeleteAccountModal();
+        
+        // Account deleted successfully - logout and redirect
+        showNotification('Your account has been permanently deleted', 'info');
+        
+        // Clear local data
+        localStorage.removeItem('token');
+        currentToken = null;
+        currentUser = null;
+        
+        // Redirect to landing page after a brief delay
+        setTimeout(() => {
+            showPage('landing');
+        }, 2000);
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    }
+};
+
 // Show Transaction History Modal
 window.showTransactionHistory = async function() {
     const modal = document.getElementById('transaction-modal');

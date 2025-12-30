@@ -166,6 +166,11 @@ class UpdatePassword(BaseModel):
     new_password: str
 
 
+class DeleteAccount(BaseModel):
+    """Delete account request."""
+    password: str
+
+
 class JobResponse(BaseModel):
     """Job information response."""
     id: str
@@ -467,7 +472,7 @@ async def update_password(
 ):
     """Update user password."""
     # Verify current password
-    if not verify_password(update_data.current_password, current_user.password_hash):
+    if not verify_password(update_data.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Current password is incorrect")
     
     # Validate new password
@@ -475,10 +480,62 @@ async def update_password(
         raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
     
     # Update password
-    current_user.password_hash = get_password_hash(update_data.new_password)
+    current_user.hashed_password = get_password_hash(update_data.new_password)
     db.commit()
     
     return {"message": "Password updated successfully"}
+
+
+@app.delete("/auth/account")
+async def delete_account(
+    delete_data: DeleteAccount,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete user account and all associated data."""
+    # Verify password
+    if not verify_password(delete_data.password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Password is incorrect")
+    
+    # Get all user's jobs
+    jobs = db.query(Job).filter(Job.user_id == current_user.id).all()
+    
+    # Delete all job files
+    for job in jobs:
+        try:
+            # Delete uploaded file
+            upload_path = UPLOAD_DIR / f"{job.id}_{job.filename}"
+            if upload_path.exists():
+                upload_path.unlink()
+            
+            # Delete completed files (stems zip)
+            completed_path = COMPLETED_DIR / f"{job.id}.zip"
+            if completed_path.exists():
+                completed_path.unlink()
+            
+            # Delete temp directory
+            temp_path = TEMP_DIR / job.id
+            if temp_path.exists():
+                shutil.rmtree(temp_path)
+            
+            logger.info(f"Deleted files for job {job.id}")
+        except Exception as e:
+            logger.error(f"Error deleting files for job {job.id}: {e}")
+    
+    # Delete credit transactions (cascade will handle this, but explicit is better)
+    db.query(CreditTransaction).filter(CreditTransaction.user_id == current_user.id).delete()
+    
+    # Delete jobs
+    db.query(Job).filter(Job.user_id == current_user.id).delete()
+    
+    # Delete user
+    user_email = current_user.email
+    db.delete(current_user)
+    db.commit()
+    
+    logger.info(f"Account deleted: {user_email}")
+    
+    return {"message": "Account deleted successfully"}
 
 
 # ============================================================================

@@ -368,10 +368,21 @@
             </div>
 
             <!-- Account Info -->
-            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 30px;">
                 <h4>Account Details</h4>
                 <p style="color: #999; margin: 5px 0;">Member since: <span id="member-since">-</span></p>
                 <p style="color: #999; margin: 5px 0;">Account ID: <span id="account-id">-</span></p>
+            </div>
+
+            <!-- Delete Account -->
+            <div style="padding: 20px; background: rgba(255,0,0,0.1); border: 2px solid rgba(255,0,0,0.3); border-radius: 8px;">
+                <h4 style="color: #ef4444;">⚠️ Danger Zone</h4>
+                <p style="color: #999; margin: 10px 0 20px 0;">Deleting your account is permanent and cannot be undone. All your jobs, files, and data will be permanently deleted.</p>
+                <button onclick="showDeleteAccountModal()" class="btn" style="background: #ef4444;" 
+                        onmouseover="this.style.background='#dc2626'" 
+                        onmouseout="this.style.background='#ef4444'">
+                    Delete My Account
+                </button>
             </div>
         </div>
     </div>
@@ -466,6 +477,37 @@
                         <tr><td colspan="3" style="text-align: center; color: #999;">Loading...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div id="delete-account-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 style="color: #ef4444;">⚠️ Delete Account</h2>
+                <button class="modal-close" onclick="closeDeleteAccountModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: rgba(255,0,0,0.1); border: 2px solid rgba(255,0,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #ef4444;">This action cannot be undone!</p>
+                    <p style="margin: 5px 0; color: #999;">• All your jobs and files will be permanently deleted</p>
+                    <p style="margin: 5px 0; color: #999;">• Your credit balance will be lost</p>
+                    <p style="margin: 5px 0; color: #999;">• Your account will be permanently removed</p>
+                </div>
+                <form id="delete-account-form" onsubmit="confirmDeleteAccount(event)">
+                    <div id="delete-error" class="error-message"></div>
+                    <label for="delete-password" style="display: block; margin-bottom: 8px; font-weight: 500;">Enter your password to confirm:</label>
+                    <input type="password" id="delete-password" placeholder="Your password" required style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeDeleteAccountModal()">Cancel</button>
+                        <button type="submit" class="btn" style="background: #ef4444;" 
+                                onmouseover="this.style.background='#dc2626'" 
+                                onmouseout="this.style.background='#ef4444'">
+                            Delete My Account
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
