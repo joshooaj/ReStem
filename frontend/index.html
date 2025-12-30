@@ -330,6 +330,13 @@
             <h3>👤 Account Information</h3>
             <p class="subtitle">Manage your account details</p>
 
+            <!-- Account Details -->
+            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 30px;">
+                <h4>Account Details</h4>
+                <p style="color: #999; margin: 5px 0;">Member since: <span id="member-since">-</span></p>
+                <p style="color: #999; margin: 5px 0;">Account ID: <span id="account-id">-</span></p>
+            </div>
+
             <!-- Update Email -->
             <div style="margin-bottom: 30px;">
                 <h4>Email Address</h4>
@@ -337,7 +344,9 @@
                 <form id="update-email-form" onsubmit="updateEmail(event)">
                     <div id="email-error" class="error-message"></div>
                     <div id="email-success" class="success-message" style="display: none;"></div>
-                    <input type="email" id="new-email" placeholder="New email address" required>
+                    <div class="form-group">
+                        <input type="email" id="new-email" placeholder="New email address" required>
+                    </div>
                     <button type="submit" class="btn">Update Email</button>
                 </form>
             </div>
@@ -349,7 +358,9 @@
                 <form id="update-username-form" onsubmit="updateUsername(event)">
                     <div id="username-error" class="error-message"></div>
                     <div id="username-success" class="success-message" style="display: none;"></div>
-                    <input type="text" id="new-username" placeholder="New username" required>
+                    <div class="form-group">
+                        <input type="text" id="new-username" placeholder="New username" required>
+                    </div>
                     <button type="submit" class="btn">Update Username</button>
                 </form>
             </div>
@@ -360,18 +371,17 @@
                 <form id="update-password-form" onsubmit="updatePassword(event)">
                     <div id="password-error" class="error-message"></div>
                     <div id="password-success" class="success-message" style="display: none;"></div>
-                    <input type="password" id="current-password" placeholder="Current password" required>
-                    <input type="password" id="new-password" placeholder="New password (min 6 characters)" required minlength="6">
-                    <input type="password" id="confirm-password" placeholder="Confirm new password" required>
+                    <div class="form-group">
+                        <input type="password" id="current-password" placeholder="Current password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="new-password" placeholder="New password (min 6 characters)" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="confirm-password" placeholder="Confirm new password" required>
+                    </div>
                     <button type="submit" class="btn">Update Password</button>
                 </form>
-            </div>
-
-            <!-- Account Info -->
-            <div style="padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 30px;">
-                <h4>Account Details</h4>
-                <p style="color: #999; margin: 5px 0;">Member since: <span id="member-since">-</span></p>
-                <p style="color: #999; margin: 5px 0;">Account ID: <span id="account-id">-</span></p>
             </div>
 
             <!-- Delete Account -->
