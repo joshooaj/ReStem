@@ -237,18 +237,26 @@
         <!-- Upload Audio Form -->
         <div class="dashboard-card" style="margin-bottom: 30px;">
             <h3>🎙️ Upload Audio</h3>
-            <p class="subtitle" style="margin-bottom: 20px;">Separate vocals, drums, bass, and other instruments (Costs 1 credit)</p>
+            <p class="subtitle" style="margin-bottom: 20px;">Separate vocals, drums, bass, and other instruments (1 credit per file)</p>
             
             <form id="upload-form">
                 <div id="upload-error" class="error-message"></div>
                 
-                <div class="upload-area" onclick="document.getElementById('audio-file').click()">
+                <div class="upload-area" id="upload-area" onclick="document.getElementById('audio-file').click()">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <h3>Click to select audio file</h3>
-                    <p>MP3, WAV, FLAC, OGG - Max 100MB</p>
-                    <input type="file" id="audio-file" accept="audio/*" style="display: none;">
+                    <h3>Click to select audio files</h3>
+                    <p>MP3, WAV, FLAC, OGG - Max 100MB per file</p>
+                    <p style="font-size: 0.9rem; margin-top: 5px; color: #999;">💡 You can select multiple files or drag & drop</p>
+                    <input type="file" id="audio-file" accept="audio/*" multiple style="display: none;">
+                </div>
+                
+                <!-- Selected Files List -->
+                <div id="selected-files" style="display: none; margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px; font-size: 1rem;">Selected Files:</h4>
+                    <ul id="file-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+                    <p style="margin-top: 10px; color: #999; font-size: 0.9rem;">Total cost: <strong><span id="total-cost">0</span> credits</strong></p>
                 </div>
                 
                 <div class="form-group">
@@ -281,7 +289,7 @@
                     <p>⏳ Uploading and processing...</p>
                 </div>
                 
-                <button type="submit" class="btn">Separate Audio (1 Credit)</button>
+                <button type="submit" class="btn" id="upload-submit-btn">Separate Audio</button>
             </form>
         </div>
 

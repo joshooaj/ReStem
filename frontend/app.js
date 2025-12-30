@@ -739,42 +739,6 @@ async function loadJobList() {
     }
 }
 
-// Drag and Drop for Upload Area
-const uploadArea = document.querySelector('.upload-area');
-if (uploadArea) {
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.add('dragging');
-    });
-
-    uploadArea.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.remove('dragging');
-    });
-
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadArea.classList.remove('dragging');
-        
-        const fileInput = document.getElementById('audio-file');
-        if (e.dataTransfer.files.length > 0) {
-            fileInput.files = e.dataTransfer.files;
-            // Show file name
-            const fileName = e.dataTransfer.files[0].name;
-            const fileInfo = document.createElement('p');
-            fileInfo.style.marginTop = '10px';
-            fileInfo.style.color = '#4f46e5';
-            fileInfo.innerHTML = `<strong>Selected:</strong> ${fileName}`;
-            const existingInfo = uploadArea.querySelector('p[style*="color: rgb"]');
-            if (existingInfo) existingInfo.remove();
-            uploadArea.appendChild(fileInfo);
-        }
-    });
-}
-
 // Stem count selector event listener
 document.getElementById('stem-count').addEventListener('change', (e) => {
     const twoStemOption = document.getElementById('two-stem-option');
@@ -786,6 +750,78 @@ document.getElementById('stem-count').addEventListener('change', (e) => {
 });
 
 // Upload Audio
+// Function to display selected files
+function displaySelectedFiles(files) {
+    const selectedFilesDiv = document.getElementById('selected-files');
+    const fileListUl = document.getElementById('file-list');
+    const totalCostSpan = document.getElementById('total-cost');
+    const submitBtn = document.getElementById('upload-submit-btn');
+    
+    if (files.length === 0) {
+        selectedFilesDiv.style.display = 'none';
+        submitBtn.textContent = 'Separate Audio';
+        return;
+    }
+    
+    // Show selected files
+    selectedFilesDiv.style.display = 'block';
+    fileListUl.innerHTML = '';
+    
+    for (let i = 0; i < files.length; i++) {
+        const li = document.createElement('li');
+        li.style.padding = '8px 0';
+        li.style.borderBottom = i < files.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none';
+        li.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>🎵 ${files[i].name}</span>
+                <span style="color: #999; font-size: 0.9rem;">${(files[i].size / 1024 / 1024).toFixed(2)} MB</span>
+            </div>
+        `;
+        fileListUl.appendChild(li);
+    }
+    
+    // Update total cost and button
+    totalCostSpan.textContent = files.length;
+    submitBtn.textContent = files.length === 1 ? 'Separate Audio (1 credit)' : `Separate ${files.length} Files (${files.length} credits)`;
+}
+
+// File selection handler
+document.getElementById('audio-file').addEventListener('change', function(e) {
+    displaySelectedFiles(e.target.files);
+});
+
+// Drag and drop handlers
+const uploadArea = document.getElementById('upload-area');
+
+uploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.borderColor = '#667eea';
+    this.style.background = 'rgba(102, 126, 234, 0.1)';
+});
+
+uploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.borderColor = '#667eea';
+    this.style.background = 'rgba(255, 255, 255, 0.05)';
+});
+
+uploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.borderColor = '#667eea';
+    this.style.background = 'rgba(255, 255, 255, 0.05)';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        // Set the files to the file input
+        const fileInput = document.getElementById('audio-file');
+        fileInput.files = files;
+        displaySelectedFiles(files);
+    }
+});
+
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fileInput = document.getElementById('audio-file');
@@ -794,49 +830,85 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     const twoStemType = document.getElementById('two-stem-type').value;
     const errorDiv = document.getElementById('upload-error');
     const progressDiv = document.getElementById('upload-progress');
+    const files = fileInput.files;
 
-    if (!fileInput.files[0]) {
-        errorDiv.textContent = 'Please select an audio file';
+    if (files.length === 0) {
+        errorDiv.textContent = 'Please select at least one audio file';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Check if user has enough credits
+    if (currentUser.credits < files.length) {
+        errorDiv.textContent = `Insufficient credits. You need ${files.length} credits but only have ${currentUser.credits.toFixed(1)} credits.`;
         errorDiv.style.display = 'block';
         return;
     }
 
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-    formData.append('model', model);
-    formData.append('stem_count', stemCount);
-    if (stemCount === '2') {
-        formData.append('two_stem_type', twoStemType);
-    }
-    
-    console.log('Upload params:', { model, stem_count: stemCount, two_stem_type: stemCount === '2' ? twoStemType : 'N/A' });
-
     try {
         progressDiv.style.display = 'block';
         errorDiv.style.display = 'none';
+        
+        let successCount = 0;
+        let failCount = 0;
+        const totalFiles = files.length;
 
-        const response = await fetch(`${API_URL}/upload`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${currentToken}` },
-            body: formData
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            showNotification('Upload successful! Processing started.', 'success');
-            fileInput.value = '';
-            progressDiv.style.display = 'none';
+        // Upload files sequentially
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            progressDiv.innerHTML = `<p>⏳ Uploading file ${i + 1} of ${totalFiles}: ${file.name}</p>`;
             
-            // Refresh user info and dashboard
-            await checkAuth();
-            await loadDashboard();
-            showPage('dashboard');
-        } else {
-            const error = await response.json();
-            progressDiv.style.display = 'none';
-            errorDiv.textContent = error.detail || 'Upload failed';
-            errorDiv.style.display = 'block';
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('model', model);
+            formData.append('stem_count', stemCount);
+            if (stemCount === '2') {
+                formData.append('two_stem_type', twoStemType);
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${currentToken}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    const error = await response.json();
+                    console.error(`Failed to upload ${file.name}:`, error.detail);
+                }
+            } catch (error) {
+                failCount++;
+                console.error(`Network error uploading ${file.name}:`, error);
+            }
         }
+
+        progressDiv.style.display = 'none';
+        
+        // Show summary
+        if (successCount > 0) {
+            let message = `Successfully uploaded ${successCount} file${successCount > 1 ? 's' : ''}!`;
+            if (failCount > 0) {
+                message += ` ${failCount} file${failCount > 1 ? 's' : ''} failed.`;
+            }
+            showNotification(message, successCount === totalFiles ? 'success' : 'info');
+        } else {
+            errorDiv.textContent = 'All uploads failed. Please try again.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        fileInput.value = '';
+        document.getElementById('selected-files').style.display = 'none';
+        document.getElementById('upload-submit-btn').textContent = 'Separate Audio';
+        
+        // Refresh user info and dashboard
+        await checkAuth();
+        await loadDashboard();
+        showPage('dashboard');
     } catch (error) {
         progressDiv.style.display = 'none';
         errorDiv.textContent = 'Network error. Please try again.';
