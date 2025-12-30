@@ -190,6 +190,7 @@ class JobResponse(BaseModel):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     download_url: Optional[str] = None
+    demucs_command: Optional[str] = None
 
 
 class CreditPurchase(BaseModel):
@@ -255,7 +256,11 @@ async def process_audio_file(job_id: str, input_path: Path, db_session_maker):
         
         cmd.append(str(input_path))
         
-        logger.info(f"Running command: {' '.join(cmd)}")
+        # Store the command for user reference
+        job.demucs_command = ' '.join(cmd)
+        db.commit()
+        
+        logger.info(f"Running command: {job.demucs_command}")
         
         process = await asyncio.create_subprocess_exec(
             *cmd,
@@ -894,7 +899,8 @@ async def upload_audio(
         model=job.model,
         status=job.status.value,
         cost=job.cost,
-        created_at=job.created_at
+        created_at=job.created_at,
+        demucs_command=job.demucs_command
     )
 
 
@@ -921,7 +927,8 @@ async def get_job_status(
         created_at=job.created_at,
         started_at=job.started_at,
         completed_at=job.completed_at,
-        download_url=download_url
+        download_url=download_url,
+        demucs_command=job.demucs_command
     )
 
 
@@ -1125,7 +1132,8 @@ async def get_job(
         created_at=job.created_at,
         started_at=job.started_at,
         completed_at=job.completed_at,
-        download_url=f"/download/{job.id}" if job.status == JobStatus.COMPLETED else None
+        download_url=f"/download/{job.id}" if job.status == JobStatus.COMPLETED else None,
+        demucs_command=job.demucs_command
     )
 
 

@@ -1115,6 +1115,17 @@ async function loadJobStems(jobId) {
     if (!stemsDiv) return;
     
     try {
+        // First fetch job details to get demucs_command
+        const jobResponse = await fetch(`${API_URL}/jobs/${jobId}`, {
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        
+        let demucsCommand = null;
+        if (jobResponse.ok) {
+            const jobData = await jobResponse.json();
+            demucsCommand = jobData.demucs_command;
+        }
+        
         const response = await fetch(`${API_URL}/stems/${jobId}`, {
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
@@ -1126,6 +1137,22 @@ async function loadJobStems(jobId) {
             if (stems.length === 0) {
                 stemsDiv.innerHTML = '<p style="color: #ef4444;">No stems found</p>';
                 return;
+            }
+            
+            // Show demucs command if available
+            let commandHtml = '';
+            if (demucsCommand) {
+                commandHtml = `
+                    <div style="background: #1e293b; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #667eea;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Demucs CLI Command</span>
+                            <button onclick="copyToClipboard('${demucsCommand.replace(/'/g, "\\'")}', this)" class="btn-download" style="padding: 4px 10px; font-size: 0.8rem;">
+                                Copy
+                            </button>
+                        </div>
+                        <code style="color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 0.9rem; word-break: break-all; display: block;">${demucsCommand}</code>
+                    </div>
+                `;
             }
             
             // Create audio players for each stem
@@ -1141,7 +1168,7 @@ async function loadJobStems(jobId) {
                         Loading...
                     </audio>
                 </div>
-            `).join('');
+            `).join('') + commandHtml;
             
             // Fetch each audio file as blob and create object URLs
             for (const stem of stems) {
@@ -1201,6 +1228,23 @@ window.downloadSingleStem = async function(jobId, stemName) {
     } catch (error) {
         console.error('Download error:', error);
         showNotification('Download error', 'error');
+    }
+};
+
+// Copy text to clipboard
+window.copyToClipboard = async function(text, button) {
+    try {
+        await navigator.clipboard.writeText(text);
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#10b981';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '';
+        }, 2000);
+    } catch (error) {
+        console.error('Failed to copy:', error);
+        showNotification('Failed to copy to clipboard', 'error');
     }
 };
 

@@ -63,6 +63,7 @@ class Job(Base):
     error_message = Column(Text, nullable=True)
     cost = Column(Float, default=1.0, nullable=False)  # Credits deducted
     archived = Column(Integer, default=0, nullable=False)  # 0 = active, 1 = archived (files deleted)
+    demucs_command = Column(Text, nullable=True)  # Full demucs CLI command used
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
