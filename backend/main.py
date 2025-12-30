@@ -248,8 +248,9 @@ async def process_audio_file(job_id: str, input_path: Path, db_session_maker):
         
         logger.info(f"Demucs processing completed for job {job_id}")
         
-        # Find the output directory
-        demucs_output = output_dir / "htdemucs"
+        # Find the output directory (demucs creates a subdirectory with the model name)
+        model_name = job.model if job.model else "htdemucs"
+        demucs_output = output_dir / model_name
         if not demucs_output.exists():
             raise FileNotFoundError(f"Demucs output directory not found: {demucs_output}")
         
@@ -822,6 +823,34 @@ async def list_jobs(
             for job in jobs
         ]
     }
+
+
+@app.get("/jobs/{job_id}")
+async def get_job(
+    job_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get a specific job by ID."""
+    job = db.query(Job)\
+        .filter(Job.id == job_id, Job.user_id == current_user.id)\
+        .first()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return JobResponse(
+        id=job.id,
+        filename=job.filename,
+        model=job.model,
+        status=job.status.value,
+        error_message=job.error_message,
+        cost=job.cost,
+        created_at=job.created_at,
+        started_at=job.started_at,
+        completed_at=job.completed_at,
+        download_url=f"/download/{job.id}" if job.status == JobStatus.COMPLETED else None
+    )
 
 
 # ============================================================================

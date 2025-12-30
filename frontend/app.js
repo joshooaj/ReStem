@@ -372,12 +372,16 @@ async function loadJobList() {
             }
 
             // Check if any jobs are processing
-            const hasProcessingJobs = jobs.some(job => 
+            const processingJobs = jobs.filter(job => 
                 job.status.toUpperCase() === 'PENDING' || job.status.toUpperCase() === 'PROCESSING'
             );
 
+            // Update polling job IDs
+            pollingJobIds.clear();
+            processingJobs.forEach(job => pollingJobIds.add(job.id));
+
             // Start or stop polling based on job status
-            if (hasProcessingJobs) {
+            if (pollingJobIds.size > 0) {
                 startJobPolling();
             } else {
                 stopJobPolling();
@@ -404,53 +408,60 @@ async function loadJobList() {
                 if (job.status.toUpperCase() === 'PROCESSING') {
                     statusBadge += ' <span style="animation: pulse 1.5s infinite;">⏳</span>';
                 }
-                
-                const rowHTML = `
-                    <td>${job.filename}</td>
-                    <td>${job.model}</td>
-                    <td>${statusBadge}</td>
-                    <td>${new Date(job.created_at).toLocaleString()}</td>
-                    <td>
-                        ${job.status.toUpperCase() === 'COMPLETED' ? 
-                            `<button onclick="showJobDetails('${job.id}')" class="btn-download">View/Play</button>
-                             <button onclick="downloadJob('${job.id}')" class="btn-download">Download</button>` : 
-                            `<button onclick="checkJobStatus('${job.id}')" class="btn-refresh">Refresh</button>`
-                        }
-                    </td>
-                `;
 
                 if (existingRow) {
-                    // Only update if status changed
+                    // Update existing row ONLY if status changed
                     const currentStatus = existingRow.getAttribute('data-status');
                     if (currentStatus !== job.status) {
-                        existingRow.innerHTML = rowHTML;
+                        // Only update the cells that changed, preserve the row itself
+                        existingRow.cells[2].innerHTML = statusBadge;
+                        existingRow.cells[4].innerHTML = job.status.toUpperCase() === 'COMPLETED' ? 
+                            `<button onclick="showJobDetails('${job.id}')" class="btn-download">View/Play</button>
+                             <button onclick="downloadJob('${job.id}')" class="btn-download">Download</button>` : 
+                            `<button onclick="checkJobStatus('${job.id}')" class="btn-refresh">Refresh</button>`;
+                        
                         existingRow.setAttribute('data-status', job.status);
                         
-                        // If job just completed, add the details row
-                        if (job.status.toUpperCase() === 'COMPLETED' && !document.getElementById(`job-details-${job.id}`)) {
-                            const detailsRow = document.createElement('tr');
-                            detailsRow.id = `job-details-${job.id}`;
-                            detailsRow.style.display = 'none';
-                            detailsRow.innerHTML = `
-                                <td colspan="5" style="padding: 20px; background: #f9fafb;">
-                                    <div id="stems-${job.id}" style="display: flex; flex-direction: column; gap: 15px;">
-                                        <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
-                                    </div>
-                                </td>
-                            `;
-                            existingRow.insertAdjacentElement('afterend', detailsRow);
+                        // If job just completed, create the details row
+                        if (job.status.toUpperCase() === 'COMPLETED') {
+                            let detailsRow = document.getElementById(`job-details-${job.id}`);
+                            if (!detailsRow) {
+                                detailsRow = document.createElement('tr');
+                                detailsRow.id = `job-details-${job.id}`;
+                                detailsRow.style.display = 'none';
+                                detailsRow.innerHTML = `
+                                    <td colspan="5" style="padding: 20px; background: #f9fafb;">
+                                        <div id="stems-${job.id}" style="display: flex; flex-direction: column; gap: 15px;">
+                                            <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
+                                        </div>
+                                    </td>
+                                `;
+                                existingRow.insertAdjacentElement('afterend', detailsRow);
+                            }
                         }
                     }
                     existingRows.delete(job.id);
                 } else {
-                    // New job - add it
+                    // New job - add it at the top
                     const row = document.createElement('tr');
                     row.setAttribute('data-job-id', job.id);
                     row.setAttribute('data-status', job.status);
-                    row.innerHTML = rowHTML;
+                    row.innerHTML = `
+                        <td>${job.filename}</td>
+                        <td>${job.model}</td>
+                        <td>${statusBadge}</td>
+                        <td>${new Date(job.created_at).toLocaleString()}</td>
+                        <td>
+                            ${job.status.toUpperCase() === 'COMPLETED' ? 
+                                `<button onclick="showJobDetails('${job.id}')" class="btn-download">View/Play</button>
+                                 <button onclick="downloadJob('${job.id}')" class="btn-download">Download</button>` : 
+                                `<button onclick="checkJobStatus('${job.id}')" class="btn-refresh">Refresh</button>`
+                            }
+                        </td>
+                    `;
                     tbody.insertBefore(row, tbody.firstChild);
                     
-                    // Add expandable row for stems if completed
+                    // Add details row if completed
                     if (job.status.toUpperCase() === 'COMPLETED') {
                         const detailsRow = document.createElement('tr');
                         detailsRow.id = `job-details-${job.id}`;
@@ -467,7 +478,7 @@ async function loadJobList() {
                 }
             });
 
-            // Remove any jobs that no longer exist
+            // Remove jobs that no longer exist
             existingRows.forEach((row, jobId) => {
                 row.remove();
                 const detailsRow = document.getElementById(`job-details-${jobId}`);
@@ -600,6 +611,9 @@ window.checkJobStatus = async function(jobId) {
     }
 };
 
+// Track jobs that are currently being polled
+let pollingJobIds = new Set();
+
 // Start automatic job status polling
 function startJobPolling() {
     // Don't start if already polling
@@ -609,12 +623,90 @@ function startJobPolling() {
     
     console.log('Starting job status polling...');
     jobPollingInterval = setInterval(async () => {
-        // Only poll if we're on the dashboard page
+        // Only poll if we're on the dashboard page and have jobs to track
         const dashboardPage = document.getElementById('dashboard-page');
-        if (dashboardPage && dashboardPage.style.display !== 'none') {
-            await loadJobList();
+        if (dashboardPage && dashboardPage.style.display !== 'none' && pollingJobIds.size > 0) {
+            await pollJobStatuses();
         }
     }, 5000); // Poll every 5 seconds
+}
+
+// Poll only the jobs that are in progress
+async function pollJobStatuses() {
+    if (pollingJobIds.size === 0) {
+        stopJobPolling();
+        return;
+    }
+    
+    // Poll each job individually
+    const pollPromises = Array.from(pollingJobIds).map(async (jobId) => {
+        try {
+            const response = await fetch(`${API_URL}/jobs/${jobId}`, {
+                headers: { 'Authorization': `Bearer ${currentToken}` }
+            });
+
+            if (response.ok) {
+                const job = await response.json();
+                updateJobInList(job);
+                
+                // Remove from polling if no longer in progress
+                if (job.status.toUpperCase() !== 'PENDING' && job.status.toUpperCase() !== 'PROCESSING') {
+                    pollingJobIds.delete(job.id);
+                }
+            }
+        } catch (error) {
+            console.error(`Failed to poll job ${jobId}:`, error);
+        }
+    });
+    
+    await Promise.all(pollPromises);
+    
+    // Stop polling if no jobs left to track
+    if (pollingJobIds.size === 0) {
+        stopJobPolling();
+    }
+}
+
+// Update a single job in the list without touching other DOM elements
+function updateJobInList(job) {
+    const existingRow = document.querySelector(`tr[data-job-id="${job.id}"]`);
+    if (!existingRow) return;
+    
+    const currentStatus = existingRow.getAttribute('data-status');
+    if (currentStatus === job.status) return; // No change
+    
+    const statusClass = `status-${job.status.toLowerCase()}`;
+    let statusBadge = `<span class="status-badge ${statusClass}">${job.status}</span>`;
+    if (job.status.toUpperCase() === 'PROCESSING') {
+        statusBadge += ' <span style="animation: pulse 1.5s infinite;">⏳</span>';
+    }
+    
+    // Update only the cells that changed
+    existingRow.cells[2].innerHTML = statusBadge;
+    existingRow.cells[4].innerHTML = job.status.toUpperCase() === 'COMPLETED' ? 
+        `<button onclick="showJobDetails('${job.id}')" class="btn-download">View/Play</button>
+         <button onclick="downloadJob('${job.id}')" class="btn-download">Download</button>` : 
+        `<button onclick="checkJobStatus('${job.id}')" class="btn-refresh">Refresh</button>`;
+    
+    existingRow.setAttribute('data-status', job.status);
+    
+    // If job just completed, create the details row
+    if (job.status.toUpperCase() === 'COMPLETED') {
+        let detailsRow = document.getElementById(`job-details-${job.id}`);
+        if (!detailsRow) {
+            detailsRow = document.createElement('tr');
+            detailsRow.id = `job-details-${job.id}`;
+            detailsRow.style.display = 'none';
+            detailsRow.innerHTML = `
+                <td colspan="5" style="padding: 20px; background: #f9fafb;">
+                    <div id="stems-${job.id}" style="display: flex; flex-direction: column; gap: 15px;">
+                        <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
+                    </div>
+                </td>
+            `;
+            existingRow.insertAdjacentElement('afterend', detailsRow);
+        }
+    }
 }
 
 // Stop automatic job status polling
@@ -658,78 +750,111 @@ window.showJobDetails = async function(jobId) {
     const detailsRow = document.getElementById(`job-details-${jobId}`);
     const stemsDiv = document.getElementById(`stems-${jobId}`);
     
+    // If details row doesn't exist, create it
+    if (!detailsRow) {
+        const jobRow = document.querySelector(`tr[data-job-id="${jobId}"]`);
+        if (!jobRow) {
+            console.error(`Job row not found for ${jobId}`);
+            return;
+        }
+        
+        const newDetailsRow = document.createElement('tr');
+        newDetailsRow.id = `job-details-${jobId}`;
+        newDetailsRow.style.display = 'table-row';
+        newDetailsRow.innerHTML = `
+            <td colspan="5" style="padding: 20px; background: #f9fafb;">
+                <div id="stems-${jobId}" style="display: flex; flex-direction: column; gap: 15px;">
+                    <p style="color: #667eea; font-weight: 600;">Loading stems...</p>
+                </div>
+            </td>
+        `;
+        jobRow.insertAdjacentElement('afterend', newDetailsRow);
+        
+        // Now load the stems
+        await loadJobStems(jobId);
+        return;
+    }
+    
     // Toggle visibility
     if (detailsRow.style.display === 'none') {
         detailsRow.style.display = 'table-row';
         
         // Load stems if not already loaded
-        if (stemsDiv.innerHTML.includes('Loading stems')) {
-            try {
-                const response = await fetch(`${API_URL}/stems/${jobId}`, {
-                    headers: { 'Authorization': `Bearer ${currentToken}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const stems = data.stems || [];
-                    
-                    if (stems.length === 0) {
-                        stemsDiv.innerHTML = '<p style="color: #ef4444;">No stems found</p>';
-                        return;
-                    }
-                    
-                    // Create audio players for each stem
-                    stemsDiv.innerHTML = stems.map(stem => `
-                        <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                                <h4 style="margin: 0; color: #667eea; text-transform: capitalize;">${stem.name}</h4>
-                                <button onclick="downloadSingleStem('${jobId}', '${stem.name}')" class="btn-download" style="padding: 6px 12px; font-size: 0.9rem;">
-                                    Download
-                                </button>
-                            </div>
-                            <audio id="audio-${jobId}-${stem.name}" controls style="width: 100%;" preload="none">
-                                Loading...
-                            </audio>
-                        </div>
-                    `).join('');
-                    
-                    // Fetch each audio file as blob and create object URLs
-                    for (const stem of stems) {
-                        const audioElement = document.getElementById(`audio-${jobId}-${stem.name}`);
-                        try {
-                            const audioResponse = await fetch(`${API_URL}${stem.url}`, {
-                                headers: { 'Authorization': `Bearer ${currentToken}` }
-                            });
-                            
-                            if (audioResponse.ok) {
-                                const blob = await audioResponse.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                audioElement.src = url;
-                                
-                                // Clean up object URL when audio is loaded
-                                audioElement.addEventListener('loadeddata', () => {
-                                    // URL will be revoked when page unloads
-                                }, { once: true });
-                            } else {
-                                audioElement.outerHTML = '<p style="color: #ef4444; margin: 0;">Failed to load audio</p>';
-                            }
-                        } catch (error) {
-                            console.error(`Failed to load stem ${stem.name}:`, error);
-                            audioElement.outerHTML = '<p style="color: #ef4444; margin: 0;">Error loading audio</p>';
-                        }
-                    }
-                } else {
-                    stemsDiv.innerHTML = '<p style="color: #ef4444;">Failed to load stems</p>';
-                }
-            } catch (error) {
-                console.error('Failed to load stems:', error);
-                stemsDiv.innerHTML = '<p style="color: #ef4444;">Error loading stems</p>';
-            }
+        if (stemsDiv && stemsDiv.innerHTML.includes('Loading stems')) {
+            await loadJobStems(jobId);
         }
     } else {
         detailsRow.style.display = 'none';
     }
 };
+
+// Load stems for a job
+async function loadJobStems(jobId) {
+    const stemsDiv = document.getElementById(`stems-${jobId}`);
+    if (!stemsDiv) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/stems/${jobId}`, {
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const stems = data.stems || [];
+            
+            if (stems.length === 0) {
+                stemsDiv.innerHTML = '<p style="color: #ef4444;">No stems found</p>';
+                return;
+            }
+            
+            // Create audio players for each stem
+            stemsDiv.innerHTML = stems.map(stem => `
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <h4 style="margin: 0; color: #667eea; text-transform: capitalize;">${stem.name}</h4>
+                        <button onclick="downloadSingleStem('${jobId}', '${stem.name}')" class="btn-download" style="padding: 6px 12px; font-size: 0.9rem;">
+                            Download
+                        </button>
+                    </div>
+                    <audio id="audio-${jobId}-${stem.name}" controls style="width: 100%;" preload="none">
+                        Loading...
+                    </audio>
+                </div>
+            `).join('');
+            
+            // Fetch each audio file as blob and create object URLs
+            for (const stem of stems) {
+                const audioElement = document.getElementById(`audio-${jobId}-${stem.name}`);
+                try {
+                    const audioResponse = await fetch(`${API_URL}${stem.url}`, {
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    });
+                    
+                    if (audioResponse.ok) {
+                        const blob = await audioResponse.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        audioElement.src = url;
+                        
+                        // Clean up object URL when audio is loaded
+                        audioElement.addEventListener('loadeddata', () => {
+                            // URL will be revoked when page unloads
+                        }, { once: true });
+                    } else {
+                        audioElement.outerHTML = '<p style="color: #ef4444; margin: 0;">Failed to load audio</p>';
+                    }
+                } catch (error) {
+                    console.error(`Failed to load stem ${stem.name}:`, error);
+                    audioElement.outerHTML = '<p style="color: #ef4444; margin: 0;">Error loading audio</p>';
+                }
+            }
+        } else {
+            stemsDiv.innerHTML = '<p style="color: #ef4444;">Failed to load stems</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load stems:', error);
+        stemsDiv.innerHTML = '<p style="color: #ef4444;">Error loading stems</p>';
+    }
+}
 
 // Download single stem (Global function for onclick)
 window.downloadSingleStem = async function(jobId, stemName) {
