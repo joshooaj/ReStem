@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f"/>
+      <stop offset="50%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="50%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.3"/>
+    </linearGradient>
+    <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  
+  <!-- Subtle grid pattern -->
+  <g opacity="0.05">
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="1"/>
+    </pattern>
+    <rect width="1200" height="630" fill="url(#grid)"/>
+  </g>
+  
+  <!-- Decorative waveforms -->
+  <g opacity="0.3">
+    <!-- Top wave -->
+    <path d="M0 150 Q150 100 300 150 T600 150 T900 150 T1200 150" 
+          fill="none" stroke="url(#waveGradient1)" stroke-width="2"/>
+    <path d="M0 160 Q150 120 300 160 T600 160 T900 160 T1200 160" 
+          fill="none" stroke="url(#waveGradient2)" stroke-width="1.5"/>
+    
+    <!-- Bottom wave -->
+    <path d="M0 480 Q150 530 300 480 T600 480 T900 480 T1200 480" 
+          fill="none" stroke="url(#waveGradient1)" stroke-width="2"/>
+    <path d="M0 490 Q150 520 300 490 T600 490 T900 490 T1200 490" 
+          fill="none" stroke="url(#waveGradient2)" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Stem visualization bars -->
+  <g transform="translate(600, 315)">
+    <!-- Vocals - purple -->
+    <rect x="-280" y="-80" width="24" height="160" rx="4" fill="#a855f7" opacity="0.8"/>
+    <rect x="-250" y="-60" width="24" height="120" rx="4" fill="#a855f7" opacity="0.6"/>
+    
+    <!-- Drums - blue -->
+    <rect x="-180" y="-100" width="24" height="200" rx="4" fill="#6366f1" opacity="0.8"/>
+    <rect x="-150" y="-70" width="24" height="140" rx="4" fill="#6366f1" opacity="0.6"/>
+    
+    <!-- Bass - indigo -->
+    <rect x="-80" y="-90" width="24" height="180" rx="4" fill="#818cf8" opacity="0.8"/>
+    <rect x="-50" y="-50" width="24" height="100" rx="4" fill="#818cf8" opacity="0.6"/>
+    
+    <!-- Guitar - violet -->
+    <rect x="20" y="-75" width="24" height="150" rx="4" fill="#c084fc" opacity="0.8"/>
+    <rect x="50" y="-55" width="24" height="110" rx="4" fill="#c084fc" opacity="0.6"/>
+    
+    <!-- Piano - pink -->
+    <rect x="120" y="-85" width="24" height="170" rx="4" fill="#e879f9" opacity="0.8"/>
+    <rect x="150" y="-45" width="24" height="90" rx="4" fill="#e879f9" opacity="0.6"/>
+    
+    <!-- Other - fuchsia -->
+    <rect x="220" y="-65" width="24" height="130" rx="4" fill="#d946ef" opacity="0.8"/>
+    <rect x="250" y="-80" width="24" height="160" rx="4" fill="#d946ef" opacity="0.6"/>
+  </g>
+  
+  <!-- Logo/Brand text -->
+  <text x="600" y="260" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="url(#accentGradient)">Mux Minus</text>
+  
+  <!-- Tagline -->
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">AI-Powered Audio Stem Separation</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="470" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b">Separate vocals, drums, bass, guitar, piano &amp; more</text>
+  
+  <!-- Accent line -->
+  <rect x="500" y="530" width="200" height="4" rx="2" fill="url(#accentGradient)" opacity="0.8"/>
+</svg>
