@@ -5,8 +5,7 @@ const STATIC_CACHE_NAME = 'mux-minus-static-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/static/css/style.css',
-  '/static/images/logo-horizontal.svg',
-  '/static/images/logo-horizontal.png'
+  '/static/images/logo-horizontal.svg'
 ];
 
 // Install event - cache essential assets
