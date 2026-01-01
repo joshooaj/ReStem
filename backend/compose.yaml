@@ -1,8 +1,0 @@
-services:
-  demucs:
-    image: joshooaj/demucs:test
-    build:
-      dockerfile: ./dockerfile
-    volumes:
-      - './files/uploads:/app/uploads:ro'
-      - './files/completed:/app/completed:rw'

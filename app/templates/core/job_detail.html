@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+
+{% block title %}Job Details{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>{{ job.original_filename }}</h1>
+                <p>Job ID: {{ job.id }}</p>
+            </div>
+            <a href="{% url 'jobs_list' %}" class="btn btn-outline">
+                ← Back to Jobs
+            </a>
+        </div>
+        
+        <!-- Job Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Job Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="stats-grid">
+                    <div>
+                        <div class="stat-label">Status</div>
+                        <span class="status status-{{ job.status }}" id="job-status">
+                            {{ job.get_status_display }}
+                        </span>
+                    </div>
+                    <div>
+                        <div class="stat-label">Model</div>
+                        <div>{{ job.get_model_display }}</div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Stem Mode</div>
+                        <div>
+                            {% if job.two_stem %}
+                                2-stem ({{ job.get_two_stem_display }})
+                            {% else %}
+                                Multi-stem
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-label">Created</div>
+                        <div data-utc-time="{{ job.created_at|date:'c' }}">{{ job.created_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                </div>
+                
+                <div id="error-message" class="alert alert-danger mt-3" style="{% if not job.error_message %}display: none;{% endif %}">
+                    <strong>Error:</strong> <span id="error-text">{{ job.error_message }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dynamic Content Area -->
+        <div id="job-content">
+            {% if job.status == 'completed' and job.files_available %}
+            <div class="card">
+                <div class="card-header">
+                    <h3>Output Files</h3>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-secondary);" class="mb-3">
+                        Files expire: <span data-utc-time="{{ job.expires_at|date:'c' }}">{{ job.expires_at|date:"M d, Y H:i" }}</span>
+                    </p>
+                    
+                    <div class="stems-grid">
+                        {% for file in output_files %}
+                        <div class="card stem-card">
+                            <div class="card-header">
+                                <h4>
+                                    {% if file.stem == 'vocals' %}🎤{% elif file.stem == 'drums' %}🥁{% elif file.stem == 'bass' %}🎸{% elif file.stem == 'guitar' %}🎸{% elif file.stem == 'piano' %}🎹{% else %}🎵{% endif %}
+                                    {{ file.name }}
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="stem-player" 
+                                     data-waveform 
+                                     data-src="{% url 'download_stem' job.id file.stem %}">
+                                </div>
+                                <a href="{% url 'download_stem' job.id file.stem %}" class="btn btn-sm btn-outline mt-2" download>
+                                    ⬇️ Download
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'download_all_stems' job.id %}" class="btn btn-primary" download>
+                            ⬇️ Download All (ZIP)
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% elif job.status == 'completed' and not job.files_available %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>Files Expired</strong><br>
+                        The output files for this job have expired and are no longer available for download.
+                        Files are retained for 24 hours after processing completes.
+                    </div>
+                </div>
+            </div>
+            {% elif job.status == 'processing' %}
+            <div class="card">
+                <div class="card-body text-center" style="padding: 3rem;">
+                    <div class="spinner-large"></div>
+                    <h3 style="margin-top: 1.5rem;">Processing...</h3>
+                    <p style="color: var(--text-secondary);">
+                        Your audio is being separated into stems. This may take a few minutes.
+                    </p>
+                    <div class="processing-indicator">
+                        <div class="processing-bar"></div>
+                    </div>
+                </div>
+            </div>
+            {% elif job.status == 'queued' %}
+            <div class="card">
+                <div class="card-body text-center" style="padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <h3>Queued</h3>
+                    <p style="color: var(--text-secondary);">
+                        Your job is in the queue and will begin processing soon.
+                    </p>
+                </div>
+            </div>
+            {% elif job.status == 'failed' %}
+            <div class="card">
+                <div class="card-body text-center" style="padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                    <h3>Processing Failed</h3>
+                    <p style="color: var(--text-secondary);">
+                        {{ job.error_message|default:"An error occurred while processing your audio file." }}
+                    </p>
+                    <a href="{% url 'create_job' %}" class="btn btn-primary mt-3">
+                        Try Again
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const jobId = '{{ job.id }}';
+    const statusUrl = '{% url "job_status_api" job.id %}';
+    let currentStatus = '{{ job.status }}';
+    let pollInterval = null;
+    
+    // Status display names
+    const statusNames = {
+        'queued': 'Queued',
+        'processing': 'Processing',
+        'completed': 'Completed',
+        'failed': 'Failed'
+    };
+    
+    // Stem icons
+    const stemIcons = {
+        'vocals': '🎤',
+        'drums': '🥁',
+        'bass': '🎸',
+        'guitar': '🎸',
+        'piano': '🎹',
+        'other': '🎵',
+        'no_vocals': '🎶',
+        'no_drums': '🎶',
+        'no_bass': '🎶'
+    };
+    
+    function updateStatus(status) {
+        const statusEl = document.getElementById('job-status');
+        statusEl.className = `status status-${status}`;
+        statusEl.textContent = statusNames[status] || status;
+    }
+    
+    function showError(message) {
+        const errorDiv = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        errorText.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+    
+    function renderCompletedContent(data) {
+        const contentEl = document.getElementById('job-content');
+        const files = data.output_files || [];
+        
+        let stemsHtml = '';
+        files.forEach(file => {
+            const icon = stemIcons[file.stem] || '🎵';
+            stemsHtml += `
+                <div class="card stem-card">
+                    <div class="card-header">
+                        <h4>${icon} ${file.name}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="stem-player" 
+                             data-waveform 
+                             data-src="${file.download_url}">
+                        </div>
+                        <a href="${file.download_url}" class="btn btn-sm btn-outline mt-2" download>
+                            ⬇️ Download
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+        
+        contentEl.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h3>Output Files</h3>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-secondary);" class="mb-3">
+                        Files available for 24 hours
+                    </p>
+                    
+                    <div class="stems-grid">
+                        ${stemsHtml}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/jobs/${jobId}/download-all/" class="btn btn-primary" download>
+                            ⬇️ Download All (ZIP)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Initialize waveform players for the new elements
+        initializePlayers();
+    }
+    
+    function renderProcessingContent() {
+        const contentEl = document.getElementById('job-content');
+        contentEl.innerHTML = `
+            <div class="card">
+                <div class="card-body text-center" style="padding: 3rem;">
+                    <div class="spinner-large"></div>
+                    <h3 style="margin-top: 1.5rem;">Processing...</h3>
+                    <p style="color: var(--text-secondary);">
+                        Your audio is being separated into stems. This may take a few minutes.
+                    </p>
+                    <div class="processing-indicator">
+                        <div class="processing-bar"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderQueuedContent() {
+        const contentEl = document.getElementById('job-content');
+        contentEl.innerHTML = `
+            <div class="card">
+                <div class="card-body text-center" style="padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                    <h3>Queued</h3>
+                    <p style="color: var(--text-secondary);">
+                        Your job is in the queue and will begin processing soon.
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+    
+    function renderFailedContent(errorMessage) {
+        const contentEl = document.getElementById('job-content');
+        contentEl.innerHTML = `
+            <div class="card">
+                <div class="card-body text-center" style="padding: 3rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                    <h3>Processing Failed</h3>
+                    <p style="color: var(--text-secondary);">
+                        ${errorMessage || 'An error occurred while processing your audio file.'}
+                    </p>
+                    <a href="{% url 'create_job' %}" class="btn btn-primary mt-3">
+                        Try Again
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+    
+    function initializePlayers() {
+        // Initialize all waveform players on the page
+        document.querySelectorAll('[data-waveform]').forEach(container => {
+            if (!container.dataset.initialized && typeof WaveformPlayer !== 'undefined') {
+                new WaveformPlayer(container);
+                container.dataset.initialized = 'true';
+            }
+        });
+    }
+    
+    async function checkStatus() {
+        try {
+            const response = await fetch(statusUrl);
+            if (!response.ok) {
+                console.error('Failed to fetch job status');
+                return;
+            }
+            
+            const data = await response.json();
+            
+            // Check if status changed
+            if (data.status !== currentStatus) {
+                currentStatus = data.status;
+                updateStatus(data.status);
+                
+                // Update content based on new status
+                switch (data.status) {
+                    case 'completed':
+                        renderCompletedContent(data);
+                        stopPolling();
+                        break;
+                    case 'processing':
+                        renderProcessingContent();
+                        break;
+                    case 'failed':
+                        showError(data.error_message || 'Processing failed');
+                        renderFailedContent(data.error_message);
+                        stopPolling();
+                        break;
+                }
+            }
+        } catch (error) {
+            console.error('Error checking job status:', error);
+        }
+    }
+    
+    function startPolling() {
+        // Poll every 3 seconds
+        pollInterval = setInterval(checkStatus, 3000);
+    }
+    
+    function stopPolling() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
+    }
+    
+    // Start polling if job is not in a terminal state
+    if (currentStatus === 'queued' || currentStatus === 'processing') {
+        startPolling();
+    }
+    
+    // Initialize any existing players on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePlayers();
+    });
+})();
+</script>
+
+<style>
+.spinner-large {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.processing-indicator {
+    max-width: 300px;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    margin: 1.5rem auto 0;
+    overflow: hidden;
+}
+
+.processing-bar {
+    height: 100%;
+    width: 30%;
+    background: var(--primary);
+    border-radius: 3px;
+    animation: processing 1.5s ease-in-out infinite;
+}
+
+@keyframes processing {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+
+.stems-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.stem-card {
+    margin-bottom: 0;
+}
+
+.stem-player {
+    min-height: 60px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+</style>
+{% endblock %}

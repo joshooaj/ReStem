@@ -1,63 +1,100 @@
+# MuxMinus - Audio Separation Service
+# Docker Compose configuration for development and production
+
 services:
-  backend:
-    build: ./backend
-    container_name: demucs-backend
+  # ==========================================================================
+  # Frontend - Django web application
+  # ==========================================================================
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: muxminus-frontend
+    # Uncomment or apply port mapping in docker-compose.override.yml
     # ports:
-    #   - "8000:80"
-    volumes:
-      - demucs-completed:/app/completed
-      - demucs-uploads:/app/uploads
-      - demucs-pip-cache:/app/pip-cache
-      - demucs-packages:/app/.packages_installed
-      - ./frontend:/app/frontend
+    #   - "8000:8000"
     environment:
-      - PYTHONUNBUFFERED=1
-      - PIP_CACHE_DIR=/app/pip-cache
-      # Uncomment to use CPU-only mode (smaller download, no GPU required):
-      # - USE_CPU=1
-      - DATABASE_URL=postgresql://demucs:demucs123@postgres:5432/demucs
-      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
-      # Square Payment Configuration (get from Square Developer Dashboard)
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/muxminus
+      - BACKEND_URL=http://backend:8000
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
       - SQUARE_ACCESS_TOKEN=${SQUARE_ACCESS_TOKEN:-}
       - SQUARE_APPLICATION_ID=${SQUARE_APPLICATION_ID:-}
       - SQUARE_LOCATION_ID=${SQUARE_LOCATION_ID:-}
       - SQUARE_ENVIRONMENT=${SQUARE_ENVIRONMENT:-sandbox}
-      - MAX_CONCURRENT_JOBS=${MAX_CONCURRENT_JOBS:-2}
+    volumes:
+      - media_data:/app/media
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
-    restart: unless-stopped
+      backend:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 30s
 
-  postgres:
-    image: postgres:16-alpine
-    container_name: demucs-postgres
+  # ==========================================================================
+  # Backend - FastAPI Demucs separation service
+  # ==========================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    container_name: muxminus-backend
+    # Expose for debugging in docker-compose.override.yml if needed.
+    # ports:
+    #  - "8001:8000"
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-demucs}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-demucs123}
-      - POSTGRES_DB=${POSTGRES_DB:-demucs}
+      - MUXMINUS_HOST=0.0.0.0
+      - MUXMINUS_PORT=8000
+      - MUXMINUS_DEVICE=${DEMUCS_DEVICE:-cpu}
+      - MUXMINUS_MAX_CONCURRENT_JOBS=${MAX_CONCURRENT_JOBS:-2}
+      - MUXMINUS_UPLOADS_DIR=/data/uploads
+      - MUXMINUS_OUTPUTS_DIR=/data/outputs
+      - MUXMINUS_API_KEY=${BACKEND_API_KEY:-}
     volumes:
-      - demucs-postgres-data:/var/lib/postgresql/data
-    restart: unless-stopped
+      - media_data:/data  # Shared volume with frontend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U demucs"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s  # Models take time to initialize
+
+  # ==========================================================================
+  # Database - PostgreSQL
+  # ==========================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: muxminus-db
+    environment:
+      - POSTGRES_DB=muxminus
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+# ==========================================================================
+# Volumes
+# ==========================================================================
 volumes:
-  demucs-completed:
+  postgres_data:
     driver: local
-  demucs-uploads:
+  media_data:
     driver: local
-  demucs-pip-cache:
-    driver: local
-  demucs-packages:
-    driver: local
-  demucs-postgres-data:
-    driver: local
+
+# ==========================================================================
+# Networks (default bridge is fine for most cases)
+# ==========================================================================
+# networks:
+#   default:
+#     driver: bridge

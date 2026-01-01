@@ -1,0 +1,51 @@
+{% load static %}
+{# Reusable pricing cards component #}
+{# Usage: {% include 'core/partials/pricing_cards.html' with show_purchase_btn=True packages=packages %} #}
+
+{% if packages %}
+    {# Dynamic packages from database #}
+    {% for package in packages %}
+    <div class="card pricing-card {% if package.credits == 25 %}featured{% endif %}">
+        <div class="pricing-credits">{{ package.credits }} Credits</div>
+        <div class="pricing-price">${{ package.price_dollars|floatformat:0 }}</div>
+        <div class="pricing-per-song">${{ package.price_per_credit|floatformat:2 }} per song</div>
+        <div class="pricing-savings">
+            {% if package.credits == 25 %}Save 20%{% elif package.credits == 100 %}Save 25%{% else %}&nbsp;{% endif %}
+        </div>
+        {% if show_purchase_btn %}
+        <a href="{% url 'purchase_credits' package.id %}" 
+           class="btn {% if package.credits == 25 %}btn-primary{% else %}btn-outline{% endif %}" 
+           style="width: 100%;">
+            Purchase
+        </a>
+        {% else %}
+        <a href="{% url 'register' %}" 
+           class="btn {% if package.credits == 25 %}btn-primary{% else %}btn-outline{% endif %}" 
+           style="width: 100%;">Buy Credits</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    {# Fallback static pricing for landing page #}
+    <div class="card pricing-card">
+        <div class="pricing-credits">5 Credits</div>
+        <div class="pricing-price">$1</div>
+        <div class="pricing-per-song">$0.20 per song</div>
+        <div class="pricing-savings">&nbsp;</div>
+        <a href="{% url 'register' %}" class="btn btn-outline" style="width: 100%;">Buy Credits</a>
+    </div>
+    <div class="card pricing-card featured">
+        <div class="pricing-credits">25 Credits</div>
+        <div class="pricing-price">$4</div>
+        <div class="pricing-per-song">$0.16 per song</div>
+        <div class="pricing-savings">Save 20%</div>
+        <a href="{% url 'register' %}" class="btn btn-primary" style="width: 100%;">Buy Credits</a>
+    </div>
+    <div class="card pricing-card">
+        <div class="pricing-credits">100 Credits</div>
+        <div class="pricing-price">$15</div>
+        <div class="pricing-per-song">$0.15 per song</div>
+        <div class="pricing-savings">Save 25%</div>
+        <a href="{% url 'register' %}" class="btn btn-outline" style="width: 100%;">Buy Credits</a>
+    </div>
+{% endif %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card card">
+        <div class="card-body">
+            <div class="auth-header">
+                <h1>Welcome Back</h1>
+                <p>Log in to your account</p>
+            </div>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username" class="form-label">Email</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password" class="form-label">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-danger mb-3">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Log In
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                Don't have an account? <a href="{% url 'register' %}">Sign up</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

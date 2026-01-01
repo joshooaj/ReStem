@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="profile-section">
+    <div class="container">
+        <h1 class="mb-4">Profile Settings</h1>
+        
+        <div class="profile-grid">
+            <nav class="profile-nav">
+                <a href="{% url 'profile' %}" class="active">Account</a>
+                <a href="{% url 'change_password' %}">Change Password</a>
+                <a href="{% url 'credits' %}">Buy Credits</a>
+            </nav>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Account Information</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="id_email" class="form-label">Email</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                    <p class="form-error">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_username" class="form-label">Username</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                {% for error in form.username.errors %}
+                                    <p class="form-error">{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="card-footer">
+                    <h4>Danger Zone</h4>
+                    <p class="mb-3" style="color: var(--text-secondary);">
+                        Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <form method="post" action="{% url 'delete_account' %}" 
+                          onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Delete Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

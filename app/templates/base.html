@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mux Minus{% endblock %} | AI Audio Stem Separation</title>
+    <meta name="description" content="Separate vocals, drums, bass, and more from any song using AI-powered stem separation.">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{% url 'landing' %}" class="navbar-brand">
+                <img src="{% static 'images/logo-horizontal.svg' %}" alt="Mux Minus" class="navbar-logo">
+            </a>
+            <button class="navbar-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="navbar-menu">
+                <div class="navbar-links">
+                    <a href="{% url 'demo' %}" class="nav-link">Demo</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+                        <a href="{% url 'jobs_list' %}" class="nav-link">Jobs</a>
+                        <a href="{% url 'credits' %}" class="nav-link">
+                            Credits <span class="badge">{{ user.credits }}</span>
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="navbar-auth">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profile' %}" class="nav-link">Profile</a>
+                        <a href="{% url 'logout' %}" class="btn btn-outline">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-link">Login</a>
+                        <a href="{% url 'register' %}" class="btn btn-primary">Get Started</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="messages-container">
+        <div class="container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+                <button type="button" class="alert-close" aria-label="Close">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="{% static 'images/logo-horizontal.svg' %}" alt="Mux Minus" class="footer-logo">
+                    <p>Audio stem separation powered by Demucs</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Product</h4>
+                    <a href="{% url 'landing' %}">Home</a>
+                    <a href="{% url 'demo' %}">Demo</a>
+                    <a href="{% url 'register' %}">Get Started</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Account</h4>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}">Dashboard</a>
+                        <a href="{% url 'profile' %}">Profile</a>
+                        <a href="{% url 'credits' %}">Buy Credits</a>
+                    {% else %}
+                        <a href="{% url 'login' %}">Login</a>
+                        <a href="{% url 'register' %}">Register</a>
+                    {% endif %}
+                </div>
+                <div class="footer-links">
+                    <h4>Open Source</h4>
+                    <a href="https://github.com/joshooaj/MuxMinus" target="_blank" rel="noopener">Mux Minus</a>
+                    <a href="https://github.com/facebookresearch/demucs" target="_blank" rel="noopener">Demucs</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Mux Minus. View on <a href="https://github.com/joshooaj/MuxMinus">GitHub</a> | Powered by <a href="https://github.com/facebookresearch/demucs" target="_blank" rel="noopener">Demucs</a>.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WaveSurfer.js for audio waveform visualization -->
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
+    {% load static %}
+    <script src="{% static 'js/waveform-player.js' %}"></script>
+    
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.navbar-toggle').addEventListener('click', function() {
+            document.querySelector('.navbar-menu').classList.toggle('active');
+        });
+        
+        // Alert close buttons
+        document.querySelectorAll('.alert-close').forEach(function(button) {
+            button.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        });
+        
+        // Convert UTC timestamps to local timezone with locale-appropriate formatting
+        document.querySelectorAll('[data-utc-time]').forEach(function(el) {
+            const utcTime = el.getAttribute('data-utc-time');
+            if (utcTime) {
+                const date = new Date(utcTime);
+                if (!isNaN(date.getTime())) {
+                    // Use locale-specific formatting (e.g., 12-hour time in US, 24-hour in EU)
+                    el.textContent = date.toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    });
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

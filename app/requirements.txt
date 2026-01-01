@@ -1,0 +1,22 @@
+# MuxMinus Frontend Requirements
+# Django web application
+
+# Django framework
+Django>=5.1.0
+
+# Database
+psycopg2-binary>=2.9.0  # PostgreSQL adapter
+
+# HTTP client for backend communication
+httpx>=0.26.0
+
+# Square payments
+# https://developer.squareup.com/docs/sdks/python/quick-start
+squareup>=43.2.0
+
+# Production server
+gunicorn>=21.0.0
+whitenoise>=6.6.0
+
+# Environment variables
+python-dotenv>=1.0.0

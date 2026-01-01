@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+
+{% block title %}Purchase {{ package.name }}{% endblock %}
+
+{% block content %}
+<div class="profile-section">
+    <div class="container">
+        <div class="create-job-header">
+            <a href="{% url 'credits' %}" class="btn btn-outline btn-sm">&larr; Back to Credits</a>
+            <h1>Purchase Credits</h1>
+            <p>Complete your purchase securely with Square.</p>
+        </div>
+        
+        <div class="purchase-grid">
+            <!-- Order Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Order Summary</h3>
+                </div>
+                <div class="card-body">
+                    <div class="order-item">
+                        <span class="order-item-name">{{ package.name }}</span>
+                        <span class="order-item-credits">{{ package.credits }} credits</span>
+                    </div>
+                    <hr style="border-color: var(--border); margin: 1rem 0;">
+                    <div class="order-total">
+                        <span>Total</span>
+                        <span class="order-total-price">${{ package.price_dollars|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>💳 Payment Details</h3>
+                </div>
+                <div class="card-body">
+                    <form id="payment-form">
+                        {% csrf_token %}
+                        
+                        <!-- Square Card Input -->
+                        <div class="form-group">
+                            <label>Card Information</label>
+                            <div id="card-container"></div>
+                            <div id="card-errors" class="form-error" style="display: none;"></div>
+                        </div>
+                        
+                        <button type="submit" id="card-button" class="btn btn-primary btn-lg" style="width: 100%;" disabled>
+                            <span id="button-text">Pay ${{ package.price_dollars|floatformat:2 }}</span>
+                            <span id="button-loading" style="display: none;">
+                                Processing...
+                            </span>
+                        </button>
+                        
+                        <p class="form-hint mt-3" style="text-align: center;">
+                            <span style="color: var(--text-secondary);">🔒 Secured by Square</span>
+                        </p>
+                    </form>
+                    
+                    <!-- Success Message (hidden initially) -->
+                    <div id="payment-success" style="display: none;">
+                        <div class="alert alert-success">
+                            <h4>🎉 Payment Successful!</h4>
+                            <p id="success-message"></p>
+                            <p>Your new balance: <strong id="new-credits"></strong> credits</p>
+                        </div>
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary" style="width: 100%;">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.purchase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .purchase-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-item-name {
+    font-weight: 600;
+}
+
+.order-item-credits {
+    color: var(--text-secondary);
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.order-total-price {
+    color: var(--primary);
+}
+
+#card-container {
+    min-height: 89px;
+    border-radius: 8px;
+    background: var(--bg-primary);
+}
+
+/* Style the Square iframe container */
+#card-container iframe {
+    border-radius: 8px;
+    background: var(--bg-primary) !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Square Web Payments SDK -->
+<script src="https://{{ square_environment }}.web.squarecdn.com/v1/square.js"></script>
+
+<script>
+const appId = '{{ square_app_id }}';
+const locationId = '{{ square_location_id }}';
+const packageId = {{ package.id }};
+const csrfToken = '{{ csrf_token }}';
+
+let card;
+
+// Initialize Square Web Payments SDK
+async function initializeSquare() {
+    if (!window.Square) {
+        console.error('Square SDK not loaded');
+        showError('Payment system failed to load. Please refresh the page.');
+        return;
+    }
+    
+    try {
+        const payments = Square.payments(appId, locationId);
+        
+        // Create card payment method with dark theme styling
+        // Square Web Payments SDK only supports limited style properties
+        card = await payments.card({
+            style: {
+                '.input-container': {
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px'
+                },
+                '.input-container.is-focus': {
+                    borderColor: '#6366f1'
+                },
+                '.input-container.is-error': {
+                    borderColor: '#ef4444'
+                },
+                'input': {
+                    color: '#e2e8f0'
+                },
+                'input::placeholder': {
+                    color: '#64748b'
+                },
+                'input.is-error': {
+                    color: '#ef4444'
+                },
+                '.message-text': {
+                    color: '#64748b'
+                },
+                '.message-icon': {
+                    color: '#64748b'
+                },
+                '.message-text.is-error': {
+                    color: '#ef4444'
+                },
+                '.message-icon.is-error': {
+                    color: '#ef4444'
+                }
+            }
+        });
+        await card.attach('#card-container');
+        
+        // Enable the submit button once card is ready
+        document.getElementById('card-button').disabled = false;
+        
+    } catch (e) {
+        console.error('Failed to initialize Square:', e);
+        showError('Failed to initialize payment form. Please refresh and try again.');
+    }
+}
+
+// Handle form submission
+async function handlePaymentSubmit(event) {
+    event.preventDefault();
+    
+    const button = document.getElementById('card-button');
+    const buttonText = document.getElementById('button-text');
+    const buttonLoading = document.getElementById('button-loading');
+    
+    // Disable button and show loading state
+    button.disabled = true;
+    buttonText.style.display = 'none';
+    buttonLoading.style.display = 'inline';
+    hideError();
+    
+    try {
+        // Tokenize the card with verification details
+        const verificationDetails = {
+            amount: '{{ package.price_dollars|floatformat:2 }}',
+            currencyCode: 'USD',
+            intent: 'CHARGE',
+            customerInitiated: true,
+            sellerKeyedIn: false,
+            billingContact: {
+                email: '{{ user.email }}'
+            }
+        };
+        
+        const tokenResult = await card.tokenize(verificationDetails);
+        
+        if (tokenResult.status === 'OK') {
+            // Send token to server
+            const response = await fetch(`/purchase/${packageId}/process/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    sourceId: tokenResult.token,
+                    idempotencyKey: crypto.randomUUID()
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                document.getElementById('payment-form').style.display = 'none';
+                document.getElementById('payment-success').style.display = 'block';
+                document.getElementById('success-message').textContent = result.message;
+                document.getElementById('new-credits').textContent = result.credits;
+                
+                // Update credits badge in navbar if exists
+                const creditsBadge = document.querySelector('.navbar .badge');
+                if (creditsBadge) {
+                    creditsBadge.textContent = result.credits;
+                }
+            } else {
+                showError(result.error || 'Payment failed. Please try again.');
+                resetButton();
+            }
+        } else {
+            let errorMessage = 'Card verification failed.';
+            if (tokenResult.errors) {
+                errorMessage = tokenResult.errors.map(e => e.message).join(' ');
+            }
+            showError(errorMessage);
+            resetButton();
+        }
+        
+    } catch (e) {
+        console.error('Payment error:', e);
+        showError('An error occurred. Please try again.');
+        resetButton();
+    }
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('card-errors');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+function hideError() {
+    const errorDiv = document.getElementById('card-errors');
+    errorDiv.style.display = 'none';
+}
+
+function resetButton() {
+    const button = document.getElementById('card-button');
+    const buttonText = document.getElementById('button-text');
+    const buttonLoading = document.getElementById('button-loading');
+    
+    button.disabled = false;
+    buttonText.style.display = 'inline';
+    buttonLoading.style.display = 'none';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSquare();
+    document.getElementById('payment-form').addEventListener('submit', handlePaymentSubmit);
+});
+</script>
+{% endblock %}

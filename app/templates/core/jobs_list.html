@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}All Jobs{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>All Jobs</h1>
+                <p>View and manage all your audio separation jobs.</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                ← Back to Dashboard
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                {% if jobs %}
+                <table class="jobs-table">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Model</th>
+                            <th>Stem</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Expires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in jobs %}
+                        <tr>
+                            <td>{{ job.original_filename }}</td>
+                            <td>{{ job.get_model_display }}</td>
+                            <td>
+                                {% if job.two_stem %}
+                                    {{ job.get_two_stem_display }}
+                                {% else %}
+                                    All stems
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status status-{{ job.status }}">
+                                    {{ job.get_status_display }}
+                                </span>
+                            </td>
+                            <td data-utc-time="{{ job.created_at|date:'c' }}">{{ job.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if job.expires_at %}
+                                    {% if job.is_expired %}
+                                        <span style="color: var(--danger);">Expired</span>
+                                    {% else %}
+                                        <span data-utc-time="{{ job.expires_at|date:'c' }}">{{ job.expires_at|date:"M d, Y H:i" }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'job_detail' job.id %}" class="btn btn-sm btn-outline">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📁</div>
+                    <h3>No jobs yet</h3>
+                    <p>Upload your first audio file to get started!</p>
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

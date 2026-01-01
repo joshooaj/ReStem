@@ -7,20 +7,35 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p ./completed ./uploads ./temp ./pip-cache
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy only requirements.txt first (changes less frequently than source code)
 COPY requirements.txt ./
 
 # Install Python dependencies (this layer will be cached unless requirements.txt changes)
-RUN pip install --no-cache-dir pip setuptools wheel
+RUN pip install --no-cache-dir pip setuptools wheel \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Copy entrypoint and source code last (changes most frequently)
-COPY entrypoint.sh ./
-COPY main.py database.py models.py auth.py ./
+# Copy application code
+COPY app/ ./app/
 
-RUN chmod +x /app/entrypoint.sh
+# Create data directories
+RUN mkdir -p /data/uploads /data/outputs /data/temp
 
-ENTRYPOINT ["/app/entrypoint.sh"]
-EXPOSE 80
+# Set environment variables
+ENV MUXMINUS_HOST=0.0.0.0
+ENV MUXMINUS_PORT=8000
+ENV MUXMINUS_DEVICE=cpu
+ENV MUXMINUS_UPLOADS_DIR=/data/uploads
+ENV MUXMINUS_OUTPUTS_DIR=/data/outputs
+ENV MUXMINUS_TEMP_DIR=/data/temp
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run the application
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

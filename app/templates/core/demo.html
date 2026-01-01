@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Demo{% endblock %}
+
+{% block content %}
+<div class="demo-section">
+    <div class="container">
+        <div class="features-header">
+            <h1>Hear it for yourself</h1>
+            <p>Listen to a song separated into stems using Mux Minus, powered by Demucs.</p>
+        </div>
+        
+        <!-- Original Track -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>🎵 Demo: Tidalwave by Avantist</h3>
+            </div>
+            <div class="card-body">
+                <div data-waveform data-src="{% static 'demo/original.mp3' %}" data-peaks="{% static 'demo/peaks/original.json' %}"></div>
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin: 1rem 0 0 0;">
+                    "<a href="https://freemusicarchive.org/music/avantist/avantist/tidalwave/" target="_blank" rel="noopener">Tidalwave</a>" 
+                    by <a href="https://freemusicarchive.org/music/avantist/" target="_blank" rel="noopener">Avantist</a>, 
+                    licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. 
+                    Modified: separated into individual stems using Demucs.
+                </p>
+            </div>
+        </div>
+        
+        <!-- 6-Stem Separation -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>6-Stem Separation</h3>
+            </div>
+            <div class="card-body">
+                <div class="stem-row">
+                    <span class="stem-label">🎤 Vocals</span>
+                    <div data-waveform data-src="{% static 'demo/vocals.mp3' %}" data-peaks="{% static 'demo/peaks/vocals.json' %}"></div>
+                </div>
+                <div class="stem-row">
+                    <span class="stem-label">🥁 Drums</span>
+                    <div data-waveform data-src="{% static 'demo/drums.mp3' %}" data-peaks="{% static 'demo/peaks/drums.json' %}"></div>
+                </div>
+                <div class="stem-row">
+                    <span class="stem-label">🎸 Bass</span>
+                    <div data-waveform data-src="{% static 'demo/bass.mp3' %}" data-peaks="{% static 'demo/peaks/bass.json' %}"></div>
+                </div>
+                <div class="stem-row">
+                    <span class="stem-label">🎸 Guitar</span>
+                    <div data-waveform data-src="{% static 'demo/guitar.mp3' %}" data-peaks="{% static 'demo/peaks/guitar.json' %}"></div>
+                </div>
+                <div class="stem-row">
+                    <span class="stem-label">🎹 Piano</span>
+                    <div data-waveform data-src="{% static 'demo/piano.mp3' %}" data-peaks="{% static 'demo/peaks/piano.json' %}"></div>
+                </div>
+                <div class="stem-row">
+                    <span class="stem-label">🎵 Other</span>
+                    <div data-waveform data-src="{% static 'demo/other.mp3' %}" data-peaks="{% static 'demo/peaks/other.json' %}"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2-Stem Separation -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>2-Stem Separation (Vocals)</h3>
+            </div>
+            <div class="card-body">
+                <div class="stem-row">
+                    <span class="stem-label">🎤 Vocals Only</span>
+                    <div data-waveform data-src="{% static 'demo/vocals.mp3' %}" data-peaks="{% static 'demo/peaks/vocals.json' %}"></div>
+                </div>
+                <div class="stem-row">
+                    <span class="stem-label">🎶 Instrumental</span>
+                    <div data-waveform data-src="{% static 'demo/no_vocals.mp3' %}" data-peaks="{% static 'demo/peaks/no_vocals.json' %}"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA -->
+        <div class="text-center mt-4">
+            <h3 class="mb-2">Ready to try it with your own music?</h3>
+            <p style="color: var(--text-secondary);">Sign up now and get 3 free credits.</p>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg mt-2">
+                Get Started Free
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card card">
+        <div class="card-body">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Start with 3 free credits</p>
+            </div>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_email" class="form-label">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_username" class="form-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password1" class="form-label">Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        {% for error in form.password1.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        {% for error in form.password2.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-danger mb-3">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Create Account
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                Already have an account? <a href="{% url 'login' %}">Log in</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

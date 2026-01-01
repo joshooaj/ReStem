@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+
+{% block title %}New Separation Job{% endblock %}
+
+{% block content %}
+<div class="create-job-section">
+    <div class="container">
+        <div class="create-job-header">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+            <h1>Create New Job</h1>
+            <p>Upload an audio file and choose your separation settings.</p>
+        </div>
+        
+        <div class="create-job-grid">
+            <!-- Main Form -->
+            <div class="create-job-form">
+                <form method="post" enctype="multipart/form-data" id="job-form">
+                    {% csrf_token %}
+                    
+                    <!-- File Upload -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>📁 Upload Audio File</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area" id="upload-area">
+                                <div class="upload-icon">🎵</div>
+                                <p class="upload-text">Drag and drop your audio file here, or click to browse</p>
+                                <p class="upload-hint">MP3, WAV, FLAC, OGG, M4A, AAC (max 100MB)</p>
+                                {{ form.audio_file }}
+                            </div>
+                            <div class="file-preview" id="file-preview" style="display: none;">
+                                <div class="file-info">
+                                    <span class="file-icon">🎵</span>
+                                    <div class="file-details">
+                                        <span class="file-name" id="file-name"></span>
+                                        <span class="file-size" id="file-size"></span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline" id="remove-file">✕</button>
+                                </div>
+                            </div>
+                            {% if form.audio_file.errors %}
+                            <div class="form-error">{{ form.audio_file.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Separation Type -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>🎚️ Separation Type</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-cards">
+                                <label class="radio-card" data-value="full">
+                                    <input type="radio" name="separation_type" value="full" 
+                                           {% if form.separation_type.value == 'full' or not form.separation_type.value %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">Full Separation</div>
+                                        <div class="radio-card-desc">
+                                            Separate into all available stems (vocals, drums, bass, etc.)
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card" data-value="two_stem">
+                                    <input type="radio" name="separation_type" value="two_stem"
+                                           {% if form.separation_type.value == 'two_stem' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">Two-Stem (Karaoke Mode)</div>
+                                        <div class="radio-card-desc">
+                                            Isolate one element and get everything else in another track
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <!-- Two-stem options (shown when two-stem is selected) -->
+                            <div class="two-stem-options" id="two-stem-options" style="display: none;">
+                                <h4>Isolate which stem?</h4>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="two_stem" value="vocals"
+                                               {% if form.two_stem.value == 'vocals' or not form.two_stem.value %}checked{% endif %}>
+                                        <span class="radio-label">
+                                            <span class="radio-icon">🎤</span>
+                                            <span>Vocals</span>
+                                            <span class="radio-hint">Get vocals + instrumental backing track</span>
+                                        </span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="two_stem" value="drums"
+                                               {% if form.two_stem.value == 'drums' %}checked{% endif %}>
+                                        <span class="radio-label">
+                                            <span class="radio-icon">🥁</span>
+                                            <span>Drums</span>
+                                            <span class="radio-hint">Get drums + everything else</span>
+                                        </span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="two_stem" value="bass"
+                                               {% if form.two_stem.value == 'bass' %}checked{% endif %}>
+                                        <span class="radio-label">
+                                            <span class="radio-icon">🎸</span>
+                                            <span>Bass</span>
+                                            <span class="radio-hint">Get bass + everything else</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Model Selection -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>🤖 AI Model</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-cards model-cards">
+                                <label class="radio-card">
+                                    <input type="radio" name="model" value="htdemucs" 
+                                           {% if form.model.value == 'htdemucs' or not form.model.value %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-badge">Recommended</div>
+                                        <div class="radio-card-title">4-Stem Standard</div>
+                                        <div class="radio-card-desc">
+                                            Fast processing with great quality. Outputs: vocals, drums, bass, other.
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="model" value="htdemucs_ft"
+                                           {% if form.model.value == 'htdemucs_ft' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-badge quality">Best Quality</div>
+                                        <div class="radio-card-title">4-Stem Fine-tuned</div>
+                                        <div class="radio-card-desc">
+                                            4x slower but slightly better quality. Same outputs as standard.
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="model" value="htdemucs_6s"
+                                           {% if form.model.value == 'htdemucs_6s' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-badge stems">6 Stems</div>
+                                        <div class="radio-card-title">6-Stem Extended</div>
+                                        <div class="radio-card-desc">
+                                            Adds guitar and piano separation. Note: piano quality may vary.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Output Format -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>💾 Output Format</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-cards">
+                                <label class="radio-card">
+                                    <input type="radio" name="output_format" value="mp3" 
+                                           {% if form.output_format.value == 'mp3' or not form.output_format.value %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-badge">Recommended</div>
+                                        <div class="radio-card-title">MP3 (320kbps)</div>
+                                        <div class="radio-card-desc">
+                                            Smaller file size, great quality for most uses. Compatible with all devices.
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="output_format" value="wav"
+                                           {% if form.output_format.value == 'wav' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-badge quality">Lossless</div>
+                                        <div class="radio-card-title">WAV (Uncompressed)</div>
+                                        <div class="radio-card-desc">
+                                            Larger files, perfect quality for professional production and further editing.
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                            <span class="btn-text">Start Processing</span>
+                            <span class="btn-cost">(1 credit)</span>
+                        </button>
+                        <p class="form-hint">Processing typically takes 1-5 minutes depending on file length.</p>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="create-job-sidebar">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="sidebar-stat">
+                            <span class="sidebar-stat-value">{{ credits }}</span>
+                            <span class="sidebar-stat-label">Credits Available</span>
+                        </div>
+                        {% if credits < 3 %}
+                        <a href="{% url 'credits' %}" class="btn btn-outline btn-sm" style="width: 100%;">Buy More Credits</a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4>Output Preview</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="output-preview">
+                            <p class="output-preview-hint">Select your options to see what files you'll get.</p>
+                            <ul class="output-list" id="output-list" style="display: none;">
+                                <!-- Dynamically populated -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h4>Quick Tips</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="tips-list">
+                            <li>Higher quality source files produce better results</li>
+                            <li>WAV and FLAC files work better than heavily compressed MP3s</li>
+                            <li>Output files are available for 24 hours after processing</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.querySelector('input[type="file"]');
+    const filePreview = document.getElementById('file-preview');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const removeBtn = document.getElementById('remove-file');
+    const twoStemOptions = document.getElementById('two-stem-options');
+    const separationRadios = document.querySelectorAll('input[name="separation_type"]');
+    const modelRadios = document.querySelectorAll('input[name="model"]');
+    const outputList = document.getElementById('output-list');
+    const outputHint = document.querySelector('.output-preview-hint');
+    
+    // File upload handling
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            updateFilePreview();
+        }
+    });
+    
+    fileInput.addEventListener('change', updateFilePreview);
+    
+    function updateFilePreview() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            uploadArea.style.display = 'none';
+            filePreview.style.display = 'block';
+            updateOutputPreview();
+        }
+    }
+    
+    removeBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        uploadArea.style.display = 'block';
+        filePreview.style.display = 'none';
+        updateOutputPreview();
+    });
+    
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    
+    // Two-stem options toggle
+    separationRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'two_stem') {
+                twoStemOptions.style.display = 'block';
+            } else {
+                twoStemOptions.style.display = 'none';
+            }
+            updateOutputPreview();
+        });
+    });
+    
+    // Initialize two-stem visibility
+    const checkedSep = document.querySelector('input[name="separation_type"]:checked');
+    if (checkedSep && checkedSep.value === 'two_stem') {
+        twoStemOptions.style.display = 'block';
+    }
+    
+    // Model change
+    modelRadios.forEach(radio => {
+        radio.addEventListener('change', updateOutputPreview);
+    });
+    
+    // Two-stem change
+    document.querySelectorAll('input[name="two_stem"]').forEach(radio => {
+        radio.addEventListener('change', updateOutputPreview);
+    });
+    
+    // Update output preview based on selections
+    function updateOutputPreview() {
+        const hasFile = fileInput.files.length > 0;
+        const separationType = document.querySelector('input[name="separation_type"]:checked')?.value;
+        const model = document.querySelector('input[name="model"]:checked')?.value;
+        const twoStem = document.querySelector('input[name="two_stem"]:checked')?.value;
+        
+        if (!hasFile) {
+            outputList.style.display = 'none';
+            outputHint.style.display = 'block';
+            outputHint.textContent = 'Upload a file to see output preview.';
+            return;
+        }
+        
+        outputHint.style.display = 'none';
+        outputList.style.display = 'block';
+        outputList.innerHTML = '';
+        
+        let stems = [];
+        
+        if (separationType === 'two_stem') {
+            const stemName = twoStem.charAt(0).toUpperCase() + twoStem.slice(1);
+            stems = [
+                { icon: getStemIcon(twoStem), name: stemName },
+                { icon: '🎶', name: `No ${stemName}` }
+            ];
+        } else if (model === 'htdemucs_6s') {
+            stems = [
+                { icon: '🎤', name: 'Vocals' },
+                { icon: '🥁', name: 'Drums' },
+                { icon: '🎸', name: 'Bass' },
+                { icon: '🎸', name: 'Guitar' },
+                { icon: '🎹', name: 'Piano' },
+                { icon: '🎵', name: 'Other' }
+            ];
+        } else {
+            stems = [
+                { icon: '🎤', name: 'Vocals' },
+                { icon: '🥁', name: 'Drums' },
+                { icon: '🎸', name: 'Bass' },
+                { icon: '🎵', name: 'Other' }
+            ];
+        }
+        
+        stems.forEach(stem => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="output-icon">${stem.icon}</span> ${stem.name}.wav`;
+            outputList.appendChild(li);
+        });
+    }
+    
+    function getStemIcon(stem) {
+        const icons = {
+            'vocals': '🎤',
+            'drums': '🥁',
+            'bass': '🎸'
+        };
+        return icons[stem] || '🎵';
+    }
+    
+    // Initial preview update
+    updateOutputPreview();
+});
+</script>
+{% endblock %}

@@ -1,4 +1,0 @@
-# Requirements for running the test client locally
-# Install with: pip install -r requirements-dev.txt
-
-requests==2.32.3

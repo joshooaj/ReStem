@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Separate Music Stems with AI{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>Separate Your Music<br>Into Individual Tracks</h1>
+        <p class="subtitle">
+            Break down any song into individual stems for vocals, drums, bass, guitar, piano, and more.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                Get Started Free
+            </a>
+            <a href="{% url 'demo' %}" class="btn btn-outline btn-lg">
+                Listen to Demo
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="features-header">
+            <h2>Why Choose Mux Minus?</h2>
+            <p>Simple, point-and-click stem separation made simple and affordable.</p>
+        </div>
+        <div class="features-grid">
+            <div class="card feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>High Quality</h3>
+                <p>Powered by Demucs, an open-source Python-based tool developed by Facebook Research.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast Processing</h3>
+                <p>No need to install anything. Just upload your files!</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Multiple Stem Options</h3>
+                <p>Choose from 2, 4, or 6 stem separation. Isolate exactly what you need.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Privacy First</h3>
+                <p>Your files are automatically deleted after 24 hours. We don't keep your original music.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Pay As You Go</h3>
+                <p>No subscriptions required. Three credits for free. Buy credits when you need them, starting at just $1.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>API Access</h3>
+                <p>Integrate stem separation into your workflow with our REST API.<br /><i>Coming soon...</i></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="features-header">
+            <h2>How It Works</h2>
+            <p>Three simple steps to separate your music.</p>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Upload</h3>
+                <p>Upload any audio file - MP3, WAV, FLAC, and more. We support all common formats.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Choose</h3>
+                <p>Select the AI model and stem configuration that fits your needs.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Download</h3>
+                <p>Get your separated stems in MP3 or high-quality WAV format. Play online or download.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Available Models -->
+<section class="features">
+    <div class="container">
+        <div class="features-header">
+            <h2>Available AI Models</h2>
+            <p>Choose the right model for your needs.</p>
+        </div>
+        <div class="features-grid">
+            <div class="card feature-card">
+                <h3>4-Stem Separation</h3>
+                <p>Separate your music into:</p>
+                <ul style="text-align: left; list-style: none; padding: 0;">
+                    <li>🎤 Vocals</li>
+                    <li>🥁 Drums</li>
+                    <li>🎸 Bass</li>
+                    <li>🎹 Other instruments</li>
+                </ul>
+            </div>
+            <div class="card feature-card">
+                <h3>6-Stem Separation</h3>
+                <p>Get even more control with:</p>
+                <ul style="text-align: left; list-style: none; padding: 0;">
+                    <li>🎤 Vocals</li>
+                    <li>🥁 Drums</li>
+                    <li>🎸 Bass</li>
+                    <li>🎸 Guitar</li>
+                    <li>🎹 Piano</li>
+                    <li>🎵 Other</li>
+                </ul>
+            </div>
+            <div class="card feature-card">
+                <h3>2-Stem Separation</h3>
+                <p>Quick isolation of a single element:</p>
+                <ul style="text-align: left; list-style: none; padding: 0;">
+                    <li>🎤 Vocals + Everything Else</li>
+                    <li>🥁 Drums + Everything Else</li>
+                    <li>🎸 Bass + Everything Else</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+    <div class="container">
+        <div class="pricing-header">
+            <h2>Simple, Transparent Pricing</h2>
+            <p>Pay as you go. Start with 3 free credits — no credit card required.</p>
+        </div>
+        <div class="pricing-grid">
+            {% include 'core/partials/pricing_cards.html' %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="features-header">
+            <h2>Ready to Separate Your Music?</h2>
+            <p>Sign up now and get 3 free credits to try it out.</p>
+            <div class="hero-actions" style="margin-top: 2rem;">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                    Create Free Account
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
