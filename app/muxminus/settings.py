@@ -21,13 +21,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-sckbc2c4l)d2d*)zrde5a9$nm**#7fn%+putdqj48g3tuj&7*%'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-sckbc2c4l)d2d*)zrde5a9$nm**#7fn%+putdqj48g3tuj&7*%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 # Allowed hosts - comma-separated list from environment, or empty for DEBUG mode
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
+
+# CSRF trusted origins - required when behind a reverse proxy (e.g., Traefik)
+# Set to your domain(s) like: https://muxminus.example.com
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+
+# Trust X-Forwarded-Proto header from reverse proxy for HTTPS detection
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
