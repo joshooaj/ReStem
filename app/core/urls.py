@@ -1,9 +1,16 @@
 from django.urls import path
+from django.views.generic import TemplateView
+from django.views.static import serve
+from django.conf import settings
 from . import views
 
 urlpatterns = [
     # Health check
     path('health/', views.health_check, name='health'),
+    
+    # PWA files served from root
+    path('sw.js', serve, {'document_root': settings.STATICFILES_DIRS[0], 'path': 'sw.js'}, name='service_worker'),
+    path('manifest.json', serve, {'document_root': settings.STATICFILES_DIRS[0], 'path': 'manifest.json'}, name='manifest'),
     
     # Public pages
     path('', views.landing_page, name='landing'),

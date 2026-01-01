@@ -1,87 +1,397 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0a0a0f"/>
-      <stop offset="50%" style="stop-color:#1a1a2e"/>
-      <stop offset="100%" style="stop-color:#0a0a0f"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1200"
+   height="630"
+   viewBox="0 0 1200 630"
+   version="1.1"
+   id="svg27"
+   sodipodi:docname="social-card.svg"
+   inkscape:export-filename="social-card.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview27"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.86904762"
+     inkscape:cx="784.19178"
+     inkscape:cy="258.90411"
+     inkscape:window-width="2556"
+     inkscape:window-height="1321"
+     inkscape:window-x="2551"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg27" />
+  <defs
+     id="defs10">
+    <linearGradient
+       id="bgGradient"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="100%">
+      <stop
+         offset="0%"
+         style="stop-color:#0a0a0f"
+         id="stop1" />
+      <stop
+         offset="50%"
+         style="stop-color:#1a1a2e"
+         id="stop2" />
+      <stop
+         offset="100%"
+         style="stop-color:#0a0a0f"
+         id="stop3" />
     </linearGradient>
-    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#6366f1"/>
-      <stop offset="50%" style="stop-color:#8b5cf6"/>
-      <stop offset="100%" style="stop-color:#a855f7"/>
+    <linearGradient
+       id="accentGradient"
+       x1="70.710678"
+       y1="3747.6659"
+       x2="98.994949"
+       y2="3747.6659"
+       gradientTransform="matrix(7.0710678,0,0,0.14142136,9.5699219e-6,-33.369863)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         style="stop-color:#6366f1"
+         id="stop4" />
+      <stop
+         offset="50%"
+         style="stop-color:#8b5cf6"
+         id="stop5" />
+      <stop
+         offset="100%"
+         style="stop-color:#a855f7"
+         id="stop6" />
     </linearGradient>
-    <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.6"/>
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.3"/>
+    <linearGradient
+       id="waveGradient1"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="0%">
+      <stop
+         offset="0%"
+         style="stop-color:#6366f1;stop-opacity:0.6"
+         id="stop7" />
+      <stop
+         offset="100%"
+         style="stop-color:#8b5cf6;stop-opacity:0.3"
+         id="stop8" />
     </linearGradient>
-    <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:0.4"/>
-      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.2"/>
+    <linearGradient
+       id="waveGradient2"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="0%">
+      <stop
+         offset="0%"
+         style="stop-color:#a855f7;stop-opacity:0.4"
+         id="stop9" />
+      <stop
+         offset="100%"
+         style="stop-color:#6366f1;stop-opacity:0.2"
+         id="stop10" />
     </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1"
+       id="linearGradient2"
+       x1="20.884932"
+       y1="91.134247"
+       x2="150.26302"
+       y2="91.134247"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(5.7085365,0,0,5.7085365,111.35079,-192.50197)" />
+    <linearGradient
+       id="linearGradient1"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#8c49ea;stop-opacity:1;"
+         offset="0.52394366"
+         id="stop1-4" />
+      <stop
+         style="stop-color:#76c9ff;stop-opacity:1;"
+         offset="0.61408448"
+         id="stop2-5" />
+    </linearGradient>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Lighting"
+       id="filter30"
+       x="0"
+       y="0"
+       width="1"
+       height="1">
+      <feComponentTransfer
+         in="blur"
+         result="component"
+         id="feComponentTransfer30">
+        <feFuncR
+           type="gamma"
+           amplitude="1"
+           exponent="1"
+           offset="-0.104762"
+           id="feFuncR30" />
+        <feFuncG
+           type="gamma"
+           amplitude="1"
+           exponent="1"
+           offset="-0.104762"
+           id="feFuncG30" />
+        <feFuncB
+           type="gamma"
+           amplitude="1"
+           exponent="1"
+           offset="-0.104762"
+           id="feFuncB30" />
+      </feComponentTransfer>
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter163"
+       x="-0.0050975707"
+       y="-0.038208955"
+       width="1.0123191"
+       height="1.0923383">
+      <feFlood
+         result="flood"
+         in="SourceGraphic"
+         flood-opacity="1.000000"
+         flood-color="rgb(0,0,0)"
+         id="feFlood162" />
+      <feGaussianBlur
+         result="blur"
+         in="SourceGraphic"
+         stdDeviation="1.000000"
+         id="feGaussianBlur162" />
+      <feOffset
+         result="offset"
+         in="blur"
+         dx="1.000000"
+         dy="1.000000"
+         id="feOffset162" />
+      <feComposite
+         result="comp1"
+         operator="in"
+         in="flood"
+         in2="offset"
+         id="feComposite162" />
+      <feComposite
+         result="comp2"
+         operator="over"
+         in="SourceGraphic"
+         in2="comp1"
+         id="feComposite163" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter165"
+       x="-0.0055455017"
+       y="-0.088345675"
+       width="1.0134016"
+       height="1.213502">
+      <feFlood
+         result="flood"
+         in="SourceGraphic"
+         flood-opacity="1.000000"
+         flood-color="rgb(0,0,0)"
+         id="feFlood163" />
+      <feGaussianBlur
+         result="blur"
+         in="SourceGraphic"
+         stdDeviation="1.000000"
+         id="feGaussianBlur163" />
+      <feOffset
+         result="offset"
+         in="blur"
+         dx="1.000000"
+         dy="1.000000"
+         id="feOffset163" />
+      <feComposite
+         result="comp1"
+         operator="in"
+         in="flood"
+         in2="offset"
+         id="feComposite164" />
+      <feComposite
+         result="comp2"
+         operator="over"
+         in="SourceGraphic"
+         in2="comp1"
+         id="feComposite165" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter167"
+       x="-0.0054074987"
+       y="-0.123003"
+       width="1.0130681"
+       height="1.2972573">
+      <feFlood
+         result="flood"
+         in="SourceGraphic"
+         flood-opacity="1.000000"
+         flood-color="rgb(0,0,0)"
+         id="feFlood165" />
+      <feGaussianBlur
+         result="blur"
+         in="SourceGraphic"
+         stdDeviation="1.000000"
+         id="feGaussianBlur165" />
+      <feOffset
+         result="offset"
+         in="blur"
+         dx="1.000000"
+         dy="1.000000"
+         id="feOffset165" />
+      <feComposite
+         result="comp1"
+         operator="in"
+         in="flood"
+         in2="offset"
+         id="feComposite166" />
+      <feComposite
+         result="comp2"
+         operator="over"
+         in="SourceGraphic"
+         in2="comp1"
+         id="feComposite167" />
+    </filter>
   </defs>
-  
   <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bgGradient)"/>
-  
+  <rect
+     width="1200"
+     height="630"
+     fill="url(#bgGradient)"
+     id="rect10" />
   <!-- Subtle grid pattern -->
-  <g opacity="0.05">
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="1"/>
-    </pattern>
-    <rect width="1200" height="630" fill="url(#grid)"/>
-  </g>
-  
   <!-- Decorative waveforms -->
-  <g opacity="0.3">
-    <!-- Top wave -->
-    <path d="M0 150 Q150 100 300 150 T600 150 T900 150 T1200 150" 
-          fill="none" stroke="url(#waveGradient1)" stroke-width="2"/>
-    <path d="M0 160 Q150 120 300 160 T600 160 T900 160 T1200 160" 
-          fill="none" stroke="url(#waveGradient2)" stroke-width="1.5"/>
-    
-    <!-- Bottom wave -->
-    <path d="M0 480 Q150 530 300 480 T600 480 T900 480 T1200 480" 
-          fill="none" stroke="url(#waveGradient1)" stroke-width="2"/>
-    <path d="M0 490 Q150 520 300 490 T600 490 T900 490 T1200 490" 
-          fill="none" stroke="url(#waveGradient2)" stroke-width="1.5"/>
+  <g
+     id="g30">
+    <g
+       opacity="0.05"
+       id="g11">
+      <pattern
+         id="grid"
+         width="40"
+         height="40"
+         patternUnits="userSpaceOnUse">
+        <path
+           d="M 40 0 L 0 0 0 40"
+           fill="none"
+           stroke="#ffffff"
+           stroke-width="1"
+           id="path10" />
+      </pattern>
+      <rect
+         width="1200"
+         height="630"
+         fill="url(#grid)"
+         id="rect11" />
+    </g>
+    <g
+       opacity="0.3"
+       id="g14">
+      <!-- Top wave -->
+      <path
+         d="M0 150 Q150 100 300 150 T600 150 T900 150 T1200 150"
+         fill="none"
+         stroke="url(#waveGradient1)"
+         stroke-width="2"
+         id="path11" />
+      <path
+         d="M0 160 Q150 120 300 160 T600 160 T900 160 T1200 160"
+         fill="none"
+         stroke="url(#waveGradient2)"
+         stroke-width="1.5"
+         id="path12" />
+      <!-- Bottom wave -->
+      <path
+         d="M0 480 Q150 530 300 480 T600 480 T900 480 T1200 480"
+         fill="none"
+         stroke="url(#waveGradient1)"
+         stroke-width="2"
+         id="path13" />
+      <path
+         d="M0 490 Q150 520 300 490 T600 490 T900 490 T1200 490"
+         fill="none"
+         stroke="url(#waveGradient2)"
+         stroke-width="1.5"
+         id="path14" />
+    </g>
   </g>
-  
   <!-- Stem visualization bars -->
-  <g transform="translate(600, 315)">
-    <!-- Vocals - purple -->
-    <rect x="-280" y="-80" width="24" height="160" rx="4" fill="#a855f7" opacity="0.8"/>
-    <rect x="-250" y="-60" width="24" height="120" rx="4" fill="#a855f7" opacity="0.6"/>
-    
-    <!-- Drums - blue -->
-    <rect x="-180" y="-100" width="24" height="200" rx="4" fill="#6366f1" opacity="0.8"/>
-    <rect x="-150" y="-70" width="24" height="140" rx="4" fill="#6366f1" opacity="0.6"/>
-    
-    <!-- Bass - indigo -->
-    <rect x="-80" y="-90" width="24" height="180" rx="4" fill="#818cf8" opacity="0.8"/>
-    <rect x="-50" y="-50" width="24" height="100" rx="4" fill="#818cf8" opacity="0.6"/>
-    
-    <!-- Guitar - violet -->
-    <rect x="20" y="-75" width="24" height="150" rx="4" fill="#c084fc" opacity="0.8"/>
-    <rect x="50" y="-55" width="24" height="110" rx="4" fill="#c084fc" opacity="0.6"/>
-    
-    <!-- Piano - pink -->
-    <rect x="120" y="-85" width="24" height="170" rx="4" fill="#e879f9" opacity="0.8"/>
-    <rect x="150" y="-45" width="24" height="90" rx="4" fill="#e879f9" opacity="0.6"/>
-    
-    <!-- Other - fuchsia -->
-    <rect x="220" y="-65" width="24" height="130" rx="4" fill="#d946ef" opacity="0.8"/>
-    <rect x="250" y="-80" width="24" height="160" rx="4" fill="#d946ef" opacity="0.6"/>
-  </g>
-  
   <!-- Logo/Brand text -->
-  <text x="600" y="260" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="url(#accentGradient)">Mux Minus</text>
-  
+  <path
+     style="fill:url(#linearGradient2);fill-opacity:1;stroke-width:5.70854;filter:url(#filter30)"
+     d="m 410.43991,543.89228 c -7.58315,-2.48785 -13.1753,-6.1682 -18.75271,-12.3417 -11.05196,-12.23327 -10.60533,-8.49293 -11.44516,-95.84033 -0.71008,-73.84339 -0.92603,-78.79202 -3.61231,-82.75482 -5.3639,-7.91318 -4.80254,-7.85078 -71.75008,-7.97797 -62.52411,-0.11872 -62.52411,-0.11872 -67.5897,-5.64625 -4.35264,-4.74962 -5.06552,-6.60393 -5.06552,-13.17662 0,-4.20696 1.01559,-9.61312 2.25692,-12.01356 4.80864,-9.29886 3.1011,-9.07896 70.50648,-9.07896 65.45682,0 66.90245,-0.14908 71.83462,-7.40712 2.44971,-3.60483 2.72521,-11.16207 3.41959,-93.78857 0.85805,-102.1116 -0.0228,-95.33855 14.10517,-108.36195 17.06693,-15.731748 44.94861,-13.226384 59.67075,5.36186 8.7984,11.10887 8.48039,7.51626 9.29516,105.01309 0.75518,90.37042 0.75518,90.37042 5.68776,94.77655 4.39032,3.92171 6.02513,4.40614 14.87068,4.40614 12.07579,0 17.82335,-3.35571 20.16043,-11.77056 0.90202,-3.24775 1.56477,-24.30933 1.57819,-50.1552 0.0285,-51.4512 0.58769,-54.03403 14.3705,-66.1661 20.82714,-18.33279 50.82703,-11.8874 64.61292,13.88197 3.18582,5.95508 3.35805,8.33189 4.08138,56.31933 0.75519,50.10189 0.75519,50.10189 4.41681,53.99625 3.21819,3.4226 4.86961,3.89431 13.63496,3.89431 11.98621,0 14.52667,-1.51569 22.69034,-13.53722 18.64094,-27.44997 38.97293,-27.7749 59.17308,-0.94558 11.25599,14.94987 17.83685,17.92471 25.65686,11.59804 3.56567,-2.88476 3.56567,-2.88476 4.32091,-53.24101 0.84753,-56.51639 1.15517,-58.20749 12.68613,-69.73845 9.08046,-9.08045 16.5756,-12.17208 29.60459,-12.21147 17.37724,-0.0513 29.44668,7.48617 38.20934,23.8658 3.18713,5.95754 3.35776,8.32327 4.08136,56.58357 0.75517,50.36615 0.75517,50.36615 5.28632,53.98873 3.91818,3.13249 6.14388,3.6236 16.45242,3.63011 13.23426,0.006 11.66641,1.07269 32.74724,-22.2307 11.93193,-13.18986 25.45397,-17.25228 38.82872,-11.66534 7.24859,3.02792 12.0489,7.71286 20.16329,19.67882 8.14939,12.01742 12.45871,14.2247 27.77124,14.2247 11.52468,0 11.72042,0.0657 17.51876,5.86387 5.20806,5.20806 5.86317,6.68594 5.8582,13.21582 -0.006,8.05782 -3.77984,15.85586 -9.03382,18.66766 -2.20828,1.18183 -23.8188,1.65404 -71.78073,1.56842 -54.91464,-0.0982 -69.61035,0.29114 -73.57327,1.94747 -9.51807,3.97856 -9.41076,3.45487 -10.23837,49.96459 -0.86471,48.5986 -1.46914,51.17875 -14.72105,62.84356 -21.67205,19.07651 -53.72806,11.06293 -66.50957,-16.6265 -1.98629,-4.30304 -2.59511,-13.07701 -3.27311,-47.16919 -0.83293,-41.88285 -0.83293,-41.88285 -4.92853,-45.97444 -4.09559,-4.09159 -4.09559,-4.09159 -55.12899,-4.73682 -74.68706,-0.94437 -69.89909,-4.13847 -69.90749,46.63594 -0.006,38.83934 -0.95714,43.73179 -10.63488,54.7262 -16.59996,18.85855 -45.85541,18.33393 -62.98777,-1.12943 -8.64551,-9.82183 -9.58657,-14.924 -9.91846,-53.77357 -0.35906,-42.03183 -1.23019,-44.15517 -18.9786,-46.25724 -8.34354,-0.98815 -17.23567,2.36117 -20.25686,7.63004 -1.34983,2.35402 -2.03567,24.3909 -2.59093,83.2518 -0.69329,73.48839 -0.97889,80.46011 -3.4838,85.04926 -4.25527,7.79582 -13.08089,16.81466 -19.82415,20.25807 -6.66649,3.40422 -23.08516,5.00067 -29.56526,2.8747 z"
+     id="path1" />
+  <text
+     x="598.10156"
+     y="260"
+     text-anchor="middle"
+     font-family="system-ui, '-apple-system', sans-serif"
+     font-size="72px"
+     font-weight="700"
+     fill="url(#accentGradient)"
+     id="text25"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:96px;font-family:Calibri;-inkscape-font-specification:'Calibri Bold';fill:#ffffff;filter:url(#filter163)">MUXMINUS</text>
   <!-- Tagline -->
-  <text x="600" y="420" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#94a3b8">AI-Powered Audio Stem Separation</text>
-  
+  <text
+     x="600.82715"
+     y="399.86301"
+     text-anchor="middle"
+     font-family="system-ui, '-apple-system', sans-serif"
+     font-size="28px"
+     fill="#94a3b8"
+     id="text26"
+     style="fill:#ffffff;filter:url(#filter165)">AI-Powered Audio Stem Separation</text>
   <!-- Subtitle -->
-  <text x="600" y="470" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#64748b">Separate vocals, drums, bass, guitar, piano &amp; more</text>
-  
+  <text
+     x="599.80957"
+     y="449.86301"
+     text-anchor="middle"
+     font-family="system-ui, '-apple-system', sans-serif"
+     font-size="20px"
+     fill="#64748b"
+     id="text27"
+     style="fill:#ffffff;filter:url(#filter167)">Separate vocals, drums, bass, guitar, piano &amp; more</text>
   <!-- Accent line -->
-  <rect x="500" y="530" width="200" height="4" rx="2" fill="url(#accentGradient)" opacity="0.8"/>
+  <rect
+     x="500"
+     y="496.63013"
+     width="200"
+     height="4"
+     rx="2"
+     fill="url(#accentGradient)"
+     opacity="0.8"
+     id="rect27"
+     style="fill:url(#accentGradient)" />
+  <text
+     xml:space="preserve"
+     style="font-size:12px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:none;stroke-width:0.999999"
+     x="852.86792"
+     y="341.81268"
+     id="text2"><tspan
+       id="tspan2"
+       style="stroke-width:0.999999"
+       x="852.86792"
+       y="341.81268"
+       sodipodi:role="line">MUXMINUS</tspan></text>
 </svg>
