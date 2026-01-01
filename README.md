@@ -104,19 +104,19 @@ Quick isolation of a single element:
 
 ### Landing Page
 <!-- TODO: Add screenshot of landing page -->
-![Landing Page](app\static\images\screenshot-landing.png)
+![Landing Page](app/static/images/screenshot-landing.png)
 
 ### Interactive Demo
 <!-- TODO: Add screenshot of demo page with waveform players -->
-![Demo Page](app\static\images\screenshot-demo.png)
+![Demo Page](app/static/images/screenshot-demo.png)
 
 ### Job Creation
 <!-- TODO: Add screenshot of job creation page -->
-![Create Job](app\static\images\screenshot-new-job.png)
+![Create Job](app/static/images/screenshot-new-job.png)
 
 ### Results & Playback
 <!-- TODO: Add screenshot of job detail page with stem players -->
-![Completed Job](app\static\images\screenshot-completed-job.png)
+![Completed Job](app/static/images/screenshot-completed-job.png)
 
 ---
 
