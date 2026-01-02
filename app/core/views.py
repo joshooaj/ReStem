@@ -309,6 +309,7 @@ def create_job(request: HttpRequest) -> HttpResponse:
     """
     # Check if user can upload (less than 5 queued jobs)
     from .models import JobType, TranscriptionType, TranscriptionFormat
+    from .constants import CREDIT_COST_SEPARATION, CREDIT_COST_TRANSCRIPTION, CREDIT_COST_LYRICS_PIPELINE
     
     queued_jobs = Job.objects.filter(
         user=request.user, 
@@ -326,8 +327,21 @@ def create_job(request: HttpRequest) -> HttpResponse:
             audio_file = form.cleaned_data['audio_file']
             job_type_str = form.cleaned_data['job_type']
             
-            # Determine credit cost
-            credit_cost = 2 if job_type_str == 'lyrics' else 1
+            # Map job_type string to JobType enum for credit calculation
+            job_type_map = {
+                'separation': JobType.SEPARATION,
+                'transcription': JobType.TRANSCRIPTION,
+                'lyrics': JobType.LYRICS_PIPELINE,
+            }
+            job_type_enum = job_type_map[job_type_str]
+            
+            # Calculate credit cost using constants
+            credit_cost_map = {
+                JobType.SEPARATION: CREDIT_COST_SEPARATION,
+                JobType.TRANSCRIPTION: CREDIT_COST_TRANSCRIPTION,
+                JobType.LYRICS_PIPELINE: CREDIT_COST_LYRICS_PIPELINE,
+            }
+            credit_cost = credit_cost_map[job_type_enum]
             
             # Check if user has enough credits
             if not request.user.has_credits(credit_cost):

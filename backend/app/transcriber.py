@@ -18,6 +18,13 @@ from .models import TranscriptionType, TranscriptionFormat
 
 logger = logging.getLogger(__name__)
 
+# Transcription types that require word-level timestamps
+TIMESTAMP_REQUIRED_TYPES = {
+    TranscriptionType.TIMESTAMPED,
+    TranscriptionType.SUBTITLES,
+    TranscriptionType.LYRICS,
+}
+
 
 def format_timestamp(seconds: float) -> str:
     """
@@ -135,7 +142,7 @@ class TranscriptionService:
                 transcribe_options["language"] = language
             
             # Enable word-level timestamps for timestamped types
-            if transcription_type in [TranscriptionType.TIMESTAMPED, TranscriptionType.SUBTITLES, TranscriptionType.LYRICS]:
+            if transcription_type in TIMESTAMP_REQUIRED_TYPES:
                 transcribe_options["word_timestamps"] = True
             
             result = self._model.transcribe(str(input_path), **transcribe_options)
@@ -282,4 +289,4 @@ class TranscriptionService:
 
 
 # Global service instance
-transcription_service = TranscriptionService(model_name="base")
+transcription_service = TranscriptionService(model_name=settings.whisper_model)

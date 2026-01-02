@@ -308,8 +308,7 @@ async def create_transcription_job(
         )
     
     # Check file size (max 5GB for transcription)
-    max_size = 5 * 1024 * 1024 * 1024  # 5GB
-    if input_path.stat().st_size > max_size:
+    if input_path.stat().st_size > settings.max_upload_size_transcription:
         raise HTTPException(
             status_code=400,
             detail=f"File size exceeds 5GB limit for transcription jobs",
@@ -376,8 +375,7 @@ async def create_lyrics_pipeline_job(
         )
     
     # Check file size (max 5GB for lyrics pipeline)
-    max_size = 5 * 1024 * 1024 * 1024  # 5GB
-    if input_path.stat().st_size > max_size:
+    if input_path.stat().st_size > settings.max_upload_size_transcription:
         raise HTTPException(
             status_code=400,
             detail=f"File size exceeds 5GB limit for lyrics pipeline jobs",

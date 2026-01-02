@@ -26,6 +26,11 @@ from .transcriber import transcription_service
 
 logger = logging.getLogger(__name__)
 
+# Progress scaling constants
+SEPARATION_PROGRESS_SCALE = 0.9  # Reserve 10% for finalization
+LYRICS_PIPELINE_VOCALS_PROGRESS = 0.5  # First 50% for vocal separation
+LYRICS_PIPELINE_TRANSCRIBE_PROGRESS = 0.5  # Second 50% for transcription
+
 
 @dataclass
 class Job:
@@ -182,7 +187,7 @@ class JobQueue:
         
         # Progress callback to update job progress
         def progress_callback(info: dict):
-            job.progress = info.get("progress", 0) * 0.9  # Reserve 10% for finalization
+            job.progress = info.get("progress", 0) * SEPARATION_PROGRESS_SCALE
             job.current_step = f"Separating ({info.get('state', 'processing')})"
         
         # Run separation in a thread pool to avoid blocking
@@ -237,7 +242,7 @@ class JobQueue:
         
         def separation_progress(info: dict):
             # First 50% is separation
-            job.progress = info.get("progress", 0) * 0.5
+            job.progress = info.get("progress", 0) * LYRICS_PIPELINE_VOCALS_PROGRESS
             job.current_step = f"Isolating vocals ({info.get('state', 'processing')})"
         
         loop = asyncio.get_event_loop()
@@ -269,7 +274,7 @@ class JobQueue:
         
         def transcription_progress(info: dict):
             # Second 50% is transcription
-            job.progress = 50.0 + (info.get("progress", 0) * 0.5)
+            job.progress = 50.0 + (info.get("progress", 0) * LYRICS_PIPELINE_TRANSCRIBE_PROGRESS)
             state = info.get("state", "processing")
             job.current_step = f"Generating lyrics ({state})"
         

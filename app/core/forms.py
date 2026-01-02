@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model
 from .models import Job, ModelChoice, StemChoice, OutputFormat
+from .constants import MAX_UPLOAD_SIZE_SEPARATION, MAX_UPLOAD_SIZE_TRANSCRIPTION
 
 User = get_user_model()
 
@@ -243,9 +244,9 @@ class JobCreateForm(forms.Form):
         if audio_file:
             # Check file size based on job type
             if job_type in ['transcription', 'lyrics']:
-                max_size = 5 * 1024 * 1024 * 1024  # 5GB for transcription
+                max_size = MAX_UPLOAD_SIZE_TRANSCRIPTION
             else:
-                max_size = 100 * 1024 * 1024  # 100MB for separation
+                max_size = MAX_UPLOAD_SIZE_SEPARATION
             
             if audio_file.size > max_size:
                 max_mb = max_size // (1024 * 1024)

@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     output_format: Literal["wav", "mp3"] = "mp3"
     mp3_bitrate: int = 320
     
+    # File size limits (in bytes)
+    max_upload_size_separation: int = 100 * 1024 * 1024  # 100MB for separation
+    max_upload_size_transcription: int = 5 * 1024 * 1024 * 1024  # 5GB for transcription
+    
+    # Whisper settings
+    whisper_model: str = "base"  # tiny, base, small, medium, large
+    
     # API settings
     api_key: str | None = None  # Optional API key for internal auth
     
