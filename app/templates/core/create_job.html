@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}New Separation Job{% endblock %}
+{% block title %}Create New Job{% endblock %}
 
 {% block content %}
 <div class="create-job-section">
@@ -8,7 +8,7 @@
         <div class="create-job-header">
             <a href="{% url 'dashboard' %}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
             <h1>Create New Job</h1>
-            <p>Upload an audio file and choose your separation settings.</p>
+            <p>Upload audio or video and choose your processing type.</p>
         </div>
         
         <div class="create-job-grid">
@@ -17,16 +17,61 @@
                 <form method="post" enctype="multipart/form-data" id="job-form">
                     {% csrf_token %}
                     
+                    <!-- Job Type Selection -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>🎯 Job Type</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-cards">
+                                <label class="radio-card" data-job-type="separation">
+                                    <input type="radio" name="job_type" value="separation" 
+                                           {% if form.job_type.value == 'separation' or not form.job_type.value %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">🎵 Audio Separation</div>
+                                        <div class="radio-card-desc">
+                                            Separate music into vocals, drums, bass, and other instruments
+                                        </div>
+                                        <div class="radio-card-meta">1 credit</div>
+                                    </div>
+                                </label>
+                                <label class="radio-card" data-job-type="transcription">
+                                    <input type="radio" name="job_type" value="transcription"
+                                           {% if form.job_type.value == 'transcription' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">📝 Speech Transcription</div>
+                                        <div class="radio-card-desc">
+                                            Convert speech to text, generate subtitles, or timestamped transcripts
+                                        </div>
+                                        <div class="radio-card-meta">1 credit</div>
+                                    </div>
+                                </label>
+                                <label class="radio-card" data-job-type="lyrics">
+                                    <input type="radio" name="job_type" value="lyrics"
+                                           {% if form.job_type.value == 'lyrics' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-badge">2 Steps</div>
+                                        <div class="radio-card-title">🎤 Lyrics Generation</div>
+                                        <div class="radio-card-desc">
+                                            Extract timestamped lyrics from songs (isolates vocals first)
+                                        </div>
+                                        <div class="radio-card-meta">2 credits</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- File Upload -->
                     <div class="card mb-3">
                         <div class="card-header">
-                            <h3>📁 Upload Audio File</h3>
+                            <h3>📁 Upload File</h3>
                         </div>
                         <div class="card-body">
                             <div class="upload-area" id="upload-area">
                                 <div class="upload-icon">🎵</div>
-                                <p class="upload-text">Drag and drop your audio file here, or click to browse</p>
-                                <p class="upload-hint">MP3, WAV, FLAC, OGG, M4A, AAC (max 100MB)</p>
+                                <p class="upload-text">Drag and drop your file here, or click to browse</p>
+                                <p class="upload-hint" id="upload-hint">MP3, WAV, FLAC, OGG, M4A, AAC (max 100MB)</p>
                                 {{ form.audio_file }}
                             </div>
                             <div class="file-preview" id="file-preview" style="display: none;">
@@ -44,6 +89,9 @@
                             {% endif %}
                         </div>
                     </div>
+                    
+                    <!-- SEPARATION OPTIONS -->
+                    <div id="separation-options" class="job-type-options">
                     
                     <!-- Separation Type -->
                     <div class="card mb-3">
@@ -187,13 +235,138 @@
                         </div>
                     </div>
                     
+                    </div><!-- End separation options -->
+                    
+                    <!-- TRANSCRIPTION OPTIONS -->
+                    <div id="transcription-options" class="job-type-options" style="display: none;">
+                    
+                    <!-- Transcription Type -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>📝 Transcription Type</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-cards">
+                                <label class="radio-card">
+                                    <input type="radio" name="transcription_type" value="basic"
+                                           {% if form.transcription_type.value == 'basic' or not form.transcription_type.value %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">Basic Text</div>
+                                        <div class="radio-card-desc">
+                                            Convert speech to plain text (.txt file)
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="transcription_type" value="timestamped"
+                                           {% if form.transcription_type.value == 'timestamped' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">Timestamped Transcript</div>
+                                        <div class="radio-card-desc">
+                                            Get text with precise timestamps (.json file)
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="transcription_type" value="subtitles"
+                                           {% if form.transcription_type.value == 'subtitles' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">Subtitle File</div>
+                                        <div class="radio-card-desc">
+                                            Generate SRT or VTT subtitles for videos
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transcription Format (shown for subtitles) -->
+                    <div class="card mb-3" id="transcription-format-card">
+                        <div class="card-header">
+                            <h3>💾 Subtitle Format</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="radio-cards">
+                                <label class="radio-card">
+                                    <input type="radio" name="transcription_format" value="srt"
+                                           {% if form.transcription_format.value == 'srt' or not form.transcription_format.value %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">SRT (SubRip)</div>
+                                        <div class="radio-card-desc">
+                                            Most widely supported subtitle format
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="transcription_format" value="vtt"
+                                           {% if form.transcription_format.value == 'vtt' %}checked{% endif %}>
+                                    <div class="radio-card-content">
+                                        <div class="radio-card-title">VTT (WebVTT)</div>
+                                        <div class="radio-card-desc">
+                                            Modern format for web video players
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Language -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>🌍 Language</h3>
+                        </div>
+                        <div class="card-body">
+                            {{ form.language }}
+                            {% if form.language.errors %}
+                            <div class="form-error">{{ form.language.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    </div><!-- End transcription options -->
+                    
+                    <!-- LYRICS OPTIONS -->
+                    <div id="lyrics-options" class="job-type-options" style="display: none;">
+                    
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>🎤 Lyrics Pipeline</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>This job will:</p>
+                            <ol class="pipeline-steps">
+                                <li><strong>Step 1:</strong> Isolate vocals from the music using Demucs</li>
+                                <li><strong>Step 2:</strong> Generate timestamped lyrics (LRC format) from the vocals</li>
+                            </ol>
+                            <p class="form-hint">You'll receive both the isolated vocals audio file and the lyrics file.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Language for Lyrics -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3>🌍 Language</h3>
+                        </div>
+                        <div class="card-body">
+                            {{ form.language }}
+                            <p class="form-hint">Leave blank for automatic language detection</p>
+                            {% if form.language.errors %}
+                            <div class="form-error">{{ form.language.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    </div><!-- End lyrics options -->
+                    
                     <!-- Submit -->
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
                             <span class="btn-text">Start Processing</span>
-                            <span class="btn-cost">(1 credit)</span>
+                            <span class="btn-cost" id="btn-cost">(1 credit)</span>
                         </button>
-                        <p class="form-hint">Processing typically takes 1-5 minutes depending on file length.</p>
+                        <p class="form-hint" id="processing-hint">Processing typically takes 1-5 minutes depending on file length.</p>
                     </div>
                 </form>
             </div>
@@ -250,7 +423,70 @@ document.addEventListener('DOMContentLoaded', function() {
     const filePreview = document.getElementById('file-preview');
     const fileName = document.getElementById('file-name');
     const fileSize = document.getElementById('file-size');
-    const removeBtn = document.getElementById('remove-file');
+    const removeFileBtn = document.getElementById('remove-file');
+    const uploadHint = document.getElementById('upload-hint');
+    const btnCost = document.getElementById('btn-cost');
+    const processingHint = document.getElementById('processing-hint');
+    
+    // Job type switching
+    const jobTypeRadios = document.querySelectorAll('input[name="job_type"]');
+    const separationOptions = document.getElementById('separation-options');
+    const transcriptionOptions = document.getElementById('transcription-options');
+    const lyricsOptions = document.getElementById('lyrics-options');
+    const transcriptionFormatCard = document.getElementById('transcription-format-card');
+    
+    function updateJobTypeDisplay() {
+        const selectedJobType = document.querySelector('input[name="job_type"]:checked').value;
+        
+        // Hide all option groups
+        separationOptions.style.display = 'none';
+        transcriptionOptions.style.display = 'none';
+        lyricsOptions.style.display = 'none';
+        
+        // Show relevant options
+        if (selectedJobType === 'separation') {
+            separationOptions.style.display = 'block';
+            uploadHint.textContent = 'MP3, WAV, FLAC, OGG, M4A, AAC (max 100MB)';
+            btnCost.textContent = '(1 credit)';
+            processingHint.textContent = 'Processing typically takes 1-5 minutes depending on file length.';
+        } else if (selectedJobType === 'transcription') {
+            transcriptionOptions.style.display = 'block';
+            uploadHint.textContent = 'Audio/Video: MP3, WAV, MP4, MKV, AVI (max 5GB)';
+            btnCost.textContent = '(1 credit)';
+            processingHint.textContent = 'Transcription typically takes 2-10 minutes depending on file length.';
+        } else if (selectedJobType === 'lyrics') {
+            lyricsOptions.style.display = 'block';
+            uploadHint.textContent = 'Audio: MP3, WAV, FLAC, OGG, M4A (max 5GB)';
+            btnCost.textContent = '(2 credits)';
+            processingHint.textContent = 'Lyrics generation involves 2 steps and typically takes 3-10 minutes.';
+        }
+        
+        updateTranscriptionFormatDisplay();
+    }
+    
+    function updateTranscriptionFormatDisplay() {
+        const transcriptionType = document.querySelector('input[name="transcription_type"]:checked');
+        if (transcriptionType && transcriptionType.value === 'subtitles') {
+            transcriptionFormatCard.style.display = 'block';
+        } else {
+            transcriptionFormatCard.style.display = 'none';
+        }
+    }
+    
+    jobTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateJobTypeDisplay);
+    });
+    
+    // Transcription type switching
+    const transcriptionTypeRadios = document.querySelectorAll('input[name="transcription_type"]');
+    transcriptionTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updateTranscriptionFormatDisplay);
+    });
+    
+    // Initialize display
+    updateJobTypeDisplay();
+    
+    // Additional variables for separation options
     const twoStemOptions = document.getElementById('two-stem-options');
     const separationRadios = document.querySelectorAll('input[name="separation_type"]');
     const modelRadios = document.querySelectorAll('input[name="model"]');
@@ -287,15 +523,19 @@ document.addEventListener('DOMContentLoaded', function() {
             fileSize.textContent = formatFileSize(file.size);
             uploadArea.style.display = 'none';
             filePreview.style.display = 'block';
-            updateOutputPreview();
+            if (typeof updateOutputPreview === 'function') {
+                updateOutputPreview();
+            }
         }
     }
     
-    removeBtn.addEventListener('click', () => {
+    removeFileBtn.addEventListener('click', () => {
         fileInput.value = '';
         uploadArea.style.display = 'block';
         filePreview.style.display = 'none';
-        updateOutputPreview();
+        if (typeof updateOutputPreview === 'function') {
+            updateOutputPreview();
+        }
     });
     
     function formatFileSize(bytes) {
@@ -305,36 +545,71 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Two-stem options toggle
-    separationRadios.forEach(radio => {
-        radio.addEventListener('change', () => {
-            if (radio.value === 'two_stem') {
-                twoStemOptions.style.display = 'block';
-            } else {
-                twoStemOptions.style.display = 'none';
-            }
-            updateOutputPreview();
+    if (separationRadios.length > 0) {
+        separationRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (twoStemOptions) {
+                    if (radio.value === 'two_stem') {
+                        twoStemOptions.style.display = 'block';
+                    } else {
+                        twoStemOptions.style.display = 'none';
+                    }
+                }
+                if (typeof updateOutputPreview === 'function') {
+                    updateOutputPreview();
+                }
+            });
         });
-    });
-    
-    // Initialize two-stem visibility
-    const checkedSep = document.querySelector('input[name="separation_type"]:checked');
-    if (checkedSep && checkedSep.value === 'two_stem') {
-        twoStemOptions.style.display = 'block';
+        
+        // Initialize two-stem visibility
+        const checkedSep = document.querySelector('input[name="separation_type"]:checked');
+        if (checkedSep && checkedSep.value === 'two_stem' && twoStemOptions) {
+            twoStemOptions.style.display = 'block';
+        }
     }
     
     // Model change
-    modelRadios.forEach(radio => {
-        radio.addEventListener('change', updateOutputPreview);
-    });
+    if (modelRadios.length > 0) {
+        modelRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (typeof updateOutputPreview === 'function') {
+                    updateOutputPreview();
+                }
+            });
+        });
+    }
     
     // Two-stem change
-    document.querySelectorAll('input[name="two_stem"]').forEach(radio => {
-        radio.addEventListener('change', updateOutputPreview);
-    });
+    const twoStemRadios = document.querySelectorAll('input[name="two_stem"]');
+    if (twoStemRadios.length > 0) {
+        twoStemRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (typeof updateOutputPreview === 'function') {
+                    updateOutputPreview();
+                }
+            });
+        });
+    }
     
     // Update output preview based on selections
     function updateOutputPreview() {
+        // Only show preview for separation jobs
+        if (!outputList || !outputHint) return;
+        
+        const jobType = document.querySelector('input[name="job_type"]:checked')?.value;
         const hasFile = fileInput.files.length > 0;
+        
+        if (jobType !== 'separation') {
+            outputHint.style.display = 'block';
+            outputList.style.display = 'none';
+            if (jobType === 'transcription') {
+                outputHint.textContent = 'Output: Transcription file in selected format';
+            } else if (jobType === 'lyrics') {
+                outputHint.textContent = 'Output: Isolated vocals audio + LRC lyrics file';
+            }
+            return;
+        }
+        
         const separationType = document.querySelector('input[name="separation_type"]:checked')?.value;
         const model = document.querySelector('input[name="model"]:checked')?.value;
         const twoStem = document.querySelector('input[name="two_stem"]:checked')?.value;
