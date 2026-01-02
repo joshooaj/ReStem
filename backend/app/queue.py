@@ -248,15 +248,19 @@ class JobQueue:
         loop = asyncio.get_event_loop()
         
         # Separate vocals directly to the main output directory (not a subdirectory)
+        # Use fine-tuned model with higher quality settings for better transcription
+        lyrics_model = ModelChoice(settings.lyrics_model)
         separation_output = await loop.run_in_executor(
             None,
             lambda: separation_service.separate(
                 input_path=job.input_path,
                 output_dir=job.output_dir,  # Save directly to output_dir
-                model=ModelChoice.HTDEMUCS,
+                model=lyrics_model,
                 two_stem=StemChoice.VOCALS,
-                output_format=OutputFormat.MP3,  # Use MP3 for smaller file size
+                output_format=OutputFormat.WAV,  # Use WAV for better Whisper accuracy
                 progress_callback=separation_progress,
+                shifts=settings.lyrics_shifts,
+                overlap=settings.lyrics_overlap,
             )
         )
         

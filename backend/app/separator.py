@@ -65,6 +65,8 @@ class SeparationService:
         two_stem: Optional[StemChoice] = None,
         output_format: OutputFormat = OutputFormat.MP3,
         progress_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
+        shifts: Optional[int] = None,
+        overlap: Optional[float] = None,
     ) -> Dict[str, Path]:
         """
         Separate an audio file into stems using demucs CLI.
@@ -76,6 +78,8 @@ class SeparationService:
             two_stem: If set, perform two-stem separation isolating this stem
             output_format: Output format (mp3 or wav)
             progress_callback: Optional callback for progress updates
+            shifts: Override for number of random shifts (None = use config default)
+            overlap: Override for segment overlap (None = use config default)
             
         Returns:
             Dictionary mapping stem names to output file paths
@@ -102,13 +106,15 @@ class SeparationService:
         if settings.segment:
             args.extend(["--segment", str(settings.segment)])
         
-        # Add overlap
-        if settings.overlap:
-            args.extend(["--overlap", str(settings.overlap)])
+        # Add overlap (use override if provided, otherwise use config default)
+        effective_overlap = overlap if overlap is not None else settings.overlap
+        if effective_overlap:
+            args.extend(["--overlap", str(effective_overlap)])
         
         # Add shifts for better quality (but slower)
-        if settings.shifts and settings.shifts > 0:
-            args.extend(["--shifts", str(settings.shifts)])
+        effective_shifts = shifts if shifts is not None else settings.shifts
+        if effective_shifts and effective_shifts > 0:
+            args.extend(["--shifts", str(effective_shifts)])
         
         # Two-stem mode
         if two_stem:

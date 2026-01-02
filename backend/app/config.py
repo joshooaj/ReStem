@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     max_upload_size_separation: int = 100 * 1024 * 1024  # 100MB for separation
     max_upload_size_transcription: int = 5 * 1024 * 1024 * 1024  # 5GB for transcription
     
+    # Lyrics pipeline settings (for vocal separation before transcription)
+    lyrics_model: str = "htdemucs_ft"  # Fine-tuned model for best vocal quality
+    lyrics_shifts: int = 2  # Higher shifts for cleaner vocals
+    lyrics_overlap: float = 0.5  # Higher overlap reduces artifacts
+    
     # Whisper settings
     whisper_model: str = "base"  # tiny, base, small, medium, large
     
