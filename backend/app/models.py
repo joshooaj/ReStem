@@ -27,6 +27,30 @@ class OutputFormat(str, Enum):
     WAV = "wav"
 
 
+class TranscriptionType(str, Enum):
+    """Transcription job types."""
+    BASIC = "basic"  # Plain text transcription
+    TIMESTAMPED = "timestamped"  # JSON with timestamps
+    SUBTITLES = "subtitles"  # SRT/VTT subtitle files
+    LYRICS = "lyrics"  # LRC format lyrics with timestamps
+
+
+class TranscriptionFormat(str, Enum):
+    """Output format for transcription."""
+    TEXT = "txt"  # Plain text
+    JSON = "json"  # JSON with timestamps
+    SRT = "srt"  # SubRip subtitle format
+    VTT = "vtt"  # WebVTT subtitle format
+    LRC = "lrc"  # LRC lyrics format
+
+
+class JobType(str, Enum):
+    """Job processing type."""
+    SEPARATION = "separation"  # Audio stem separation
+    TRANSCRIPTION = "transcription"  # Speech-to-text transcription
+    LYRICS_PIPELINE = "lyrics_pipeline"  # Demucs + Whisper for lyrics
+
+
 class JobStatus(str, Enum):
     """Job processing status."""
     QUEUED = "queued"
@@ -51,6 +75,42 @@ class JobRequest(BaseModel):
                 "model": "htdemucs",
                 "two_stem": None,
                 "output_format": "mp3"
+            }
+        }
+
+
+class TranscriptionRequest(BaseModel):
+    """Request to create a new transcription job."""
+    job_id: str = Field(..., description="Unique job identifier from frontend")
+    input_path: str = Field(..., description="Path to input audio/video file (relative to uploads dir)")
+    transcription_type: TranscriptionType = Field(default=TranscriptionType.BASIC, description="Type of transcription")
+    transcription_format: TranscriptionFormat = Field(default=TranscriptionFormat.TEXT, description="Output format")
+    language: Optional[str] = Field(default=None, description="Language code (e.g., 'en', 'es'). None for auto-detect")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "job_id": "550e8400-e29b-41d4-a716-446655440001",
+                "input_path": "1/video.mp4",
+                "transcription_type": "basic",
+                "transcription_format": "txt",
+                "language": None
+            }
+        }
+
+
+class LyricsPipelineRequest(BaseModel):
+    """Request to create a lyrics generation pipeline job (Demucs + Whisper)."""
+    job_id: str = Field(..., description="Unique job identifier from frontend")
+    input_path: str = Field(..., description="Path to input audio file (relative to uploads dir)")
+    language: Optional[str] = Field(default=None, description="Language code for lyrics. None for auto-detect")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "job_id": "550e8400-e29b-41d4-a716-446655440002",
+                "input_path": "1/song.mp3",
+                "language": None
             }
         }
 

@@ -18,5 +18,8 @@ torchaudio>=2.1.0
 demucs>=4.0.1
 soundfile>=0.12.0  # Required by torchaudio for WAV file support
 
+# Whisper speech-to-text transcription
+openai-whisper>=20231117
+
 # Additional dependencies
 python-multipart>=0.0.6  # For file uploads if needed
