@@ -13,6 +13,7 @@ pydantic-settings>=2.0.0
 #   pip install torch torchaudio
 torch>=2.1.0
 torchaudio>=2.1.0
+torchcodec>=0.9.1
 
 # Demucs audio separation
 demucs>=4.0.1
