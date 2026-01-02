@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Separate Music Stems with AI{% endblock %}
+{% block title %}AI-Powered Audio Separation & Transcription{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
-        <h1>Separate Your Music<br>Into Individual Tracks</h1>
+        <h1>Separate Music Stems<br>& Transcribe Speech with AI</h1>
         <p class="subtitle">
-            Break down any song into individual stems for vocals, drums, bass, guitar, piano, and more.
+            Break down any song into individual stems for vocals, drums, bass, guitar, piano, and more.<br>
+            Transcribe speech to text, generate subtitles, or create timestamped lyrics from your audio.
         </p>
         <div class="hero-actions">
             <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
@@ -27,28 +28,28 @@
     <div class="container">
         <div class="features-header">
             <h2>Why Choose Mux Minus?</h2>
-            <p>Simple, point-and-click stem separation made simple and affordable.</p>
+            <p>Professional-grade stem separation and speech transcription made simple and affordable.</p>
         </div>
         <div class="features-grid">
             <div class="card feature-card">
                 <div class="feature-icon">🎯</div>
                 <h3>High Quality</h3>
-                <p>Powered by Demucs, an open-source Python-based tool developed by Facebook Research.</p>
+                <p>Powered by Demucs and Whisper AI, open-source tools developed by Facebook Research and OpenAI.</p>
             </div>
             <div class="card feature-card">
                 <div class="feature-icon">⚡</div>
                 <h3>Fast Processing</h3>
-                <p>No need to install anything. Just upload your files!</p>
+                <p>No need to install anything. Just upload your files and we'll handle the rest!</p>
             </div>
             <div class="card feature-card">
                 <div class="feature-icon">🎨</div>
-                <h3>Multiple Stem Options</h3>
-                <p>Choose from 2, 4, or 6 stem separation. Isolate exactly what you need.</p>
+                <h3>Multiple Options</h3>
+                <p>Choose from 2, 4, or 6 stem separation. Or transcribe speech to text, subtitles, or lyrics.</p>
             </div>
             <div class="card feature-card">
                 <div class="feature-icon">🔒</div>
                 <h3>Privacy First</h3>
-                <p>Your files are automatically deleted after 24 hours. We don't keep your original music.</p>
+                <p>Your files are automatically deleted after 24 hours. We don't keep your original content.</p>
             </div>
             <div class="card feature-card">
                 <div class="feature-icon">💰</div>
@@ -58,7 +59,7 @@
             <div class="card feature-card">
                 <div class="feature-icon">🌐</div>
                 <h3>API Access</h3>
-                <p>Integrate stem separation into your workflow with our REST API.<br /><i>Coming soon...</i></p>
+                <p>Integrate stem separation and transcription into your workflow with our REST API.<br /><i>Coming soon...</i></p>
             </div>
         </div>
     </div>
@@ -69,23 +70,23 @@
     <div class="container">
         <div class="features-header">
             <h2>How It Works</h2>
-            <p>Three simple steps to separate your music.</p>
+            <p>Three simple steps to separate or transcribe your audio.</p>
         </div>
         <div class="steps">
             <div class="step">
                 <div class="step-number">1</div>
                 <h3>Upload</h3>
-                <p>Upload any audio file - MP3, WAV, FLAC, and more. We support all common formats.</p>
+                <p>Upload any audio or video file - MP3, WAV, FLAC, MP4, and more. We support all common formats.</p>
             </div>
             <div class="step">
                 <div class="step-number">2</div>
                 <h3>Choose</h3>
-                <p>Select the AI model and stem configuration that fits your needs.</p>
+                <p>Select the AI model and processing type: stem separation, transcription, subtitles, or lyrics.</p>
             </div>
             <div class="step">
                 <div class="step-number">3</div>
                 <h3>Download</h3>
-                <p>Get your separated stems in MP3 or high-quality WAV format. Play online or download.</p>
+                <p>Get your separated stems or transcription files. Play online or download in your preferred format.</p>
             </div>
         </div>
     </div>
@@ -95,8 +96,8 @@
 <section class="features">
     <div class="container">
         <div class="features-header">
-            <h2>Available AI Models</h2>
-            <p>Choose the right model for your needs.</p>
+            <h2>Audio Separation Models</h2>
+            <p>Choose the right model for your music production needs.</p>
         </div>
         <div class="features-grid">
             <div class="card feature-card">
@@ -129,6 +130,38 @@
                     <li>🥁 Drums + Everything Else</li>
                     <li>🎸 Bass + Everything Else</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Transcription Features -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="features-header">
+            <h2>Speech-to-Text Transcription</h2>
+            <p>Convert audio and video to text with AI-powered transcription.</p>
+        </div>
+        <div class="features-grid">
+            <div class="card feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Basic Transcription</h3>
+                <p>Convert speech from audio or video files to plain text. Automatic language detection supports multiple languages.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h3>Timestamped Text</h3>
+                <p>Get transcription with precise timestamps for each segment. Perfect for creating video chapters or navigation.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">📺</div>
+                <h3>Subtitle Generation</h3>
+                <p>Generate SRT or WebVTT subtitle files ready for use in video players and editing software.</p>
+            </div>
+            <div class="card feature-card">
+                <div class="feature-icon">🎵</div>
+                <h3>Lyrics from Songs</h3>
+                <p>Extract timestamped lyrics from music in LRC format. Our pipeline isolates vocals first for better accuracy. <i>(2 credits)</i></p>
             </div>
         </div>
     </div>
