@@ -172,7 +172,7 @@
     <div class="container">
         <div class="pricing-header">
             <h2>Simple, Transparent Pricing</h2>
-            <p>Pay as you go. Start with 3 free credits — no credit card required.</p>
+            <p>Pay as you go. Start with {{ default_credits }} free credit{{ default_credits|pluralize }} — no credit card required.</p>
         </div>
         <div class="pricing-grid">
             {% include 'core/partials/pricing_cards.html' %}
@@ -185,7 +185,7 @@
     <div class="container">
         <div class="features-header">
             <h2>Ready to Separate Your Music?</h2>
-            <p>Sign up now and get 3 free credits to try it out.</p>
+            <p>Sign up now and get {{ default_credits }} free credit{{ default_credits|pluralize }} to try it out.</p>
             <div class="hero-actions" style="margin-top: 2rem;">
                 <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
                     Create Free Account

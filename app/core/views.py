@@ -10,7 +10,7 @@ import uuid
 from typing import Optional
 
 from .forms import UserRegistrationForm, UserLoginForm, ProfileUpdateForm, PasswordChangeForm, JobCreateForm
-from .models import Job, CreditPackage, JobStatus
+from .models import Job, CreditPackage, JobStatus, SiteSettings
 
 
 def health_check(request: HttpRequest) -> JsonResponse:
@@ -26,7 +26,9 @@ def landing_page(request: HttpRequest) -> HttpResponse:
     """
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'core/landing.html')
+    return render(request, 'core/landing.html', {
+        'default_credits': SiteSettings.get_default_credits(),
+    })
 
 
 def register(request: HttpRequest) -> HttpResponse:
@@ -49,7 +51,10 @@ def register(request: HttpRequest) -> HttpResponse:
     else:
         form = UserRegistrationForm()
     
-    return render(request, 'core/register.html', {'form': form})
+    return render(request, 'core/register.html', {
+        'form': form,
+        'default_credits': SiteSettings.get_default_credits(),
+    })
 
 
 def user_login(request: HttpRequest) -> HttpResponse:
@@ -274,7 +279,9 @@ def job_detail(request: HttpRequest, job_id: uuid.UUID) -> HttpResponse:
 
 def demo(request: HttpRequest) -> HttpResponse:
     """Demo page showcasing sample processed audio with waveform players."""
-    return render(request, 'core/demo.html')
+    return render(request, 'core/demo.html', {
+        'default_credits': SiteSettings.get_default_credits(),
+    })
 
 
 @login_required

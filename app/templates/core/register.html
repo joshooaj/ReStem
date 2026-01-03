@@ -8,7 +8,7 @@
         <div class="card-body">
             <div class="auth-header">
                 <h1>Create Account</h1>
-                <p>Start with 3 free credits</p>
+                <p>Start with {{ default_credits }} free credit{{ default_credits|pluralize }}</p>
             </div>
             
             <form method="post" novalidate>

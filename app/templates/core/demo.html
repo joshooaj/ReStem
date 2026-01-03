@@ -80,7 +80,7 @@
         <!-- CTA -->
         <div class="text-center mt-4">
             <h3 class="mb-2">Ready to try it with your own music?</h3>
-            <p style="color: var(--text-secondary);">Sign up now and get 3 free credits.</p>
+            <p style="color: var(--text-secondary);">Sign up now and get {{ default_credits }} free credit{{ default_credits|pluralize }}.</p>
             <a href="{% url 'register' %}" class="btn btn-primary btn-lg mt-2">
                 Get Started Free
             </a>
