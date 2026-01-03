@@ -12,6 +12,9 @@ from datetime import timedelta
 
 import whisper
 import torch
+from mutagen import File as MutagenFile
+from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3NoHeaderError
 
 from .config import settings
 from .models import TranscriptionType, TranscriptionFormat
@@ -57,6 +60,46 @@ def format_timestamp_lrc(seconds: float) -> str:
     minutes = int(seconds // 60)
     secs = seconds % 60
     return f"[{minutes:02d}:{secs:05.2f}]"
+
+
+def extract_audio_metadata(file_path: Path) -> Dict[str, str]:
+    """
+    Extract metadata tags from an audio file.
+    
+    Supports MP3, FLAC, OGG, M4A, and other common formats via mutagen.
+    
+    Args:
+        file_path: Path to the audio file
+        
+    Returns:
+        Dictionary with 'title', 'artist', and 'album' keys (may be empty strings)
+    """
+    metadata = {
+        "title": "",
+        "artist": "",
+        "album": "",
+    }
+    
+    try:
+        audio = MutagenFile(file_path, easy=True)
+        if audio is None:
+            logger.debug(f"Could not read metadata from {file_path}")
+            return metadata
+        
+        # Extract common tags - mutagen returns lists, so take first item
+        if "title" in audio:
+            metadata["title"] = audio["title"][0]
+        if "artist" in audio:
+            metadata["artist"] = audio["artist"][0]
+        if "album" in audio:
+            metadata["album"] = audio["album"][0]
+            
+        logger.debug(f"Extracted metadata: {metadata}")
+        
+    except Exception as e:
+        logger.warning(f"Failed to extract metadata from {file_path}: {e}")
+    
+    return metadata
 
 
 class TranscriptionService:
@@ -156,6 +199,7 @@ class TranscriptionService:
                 output_dir=output_dir,
                 transcription_type=transcription_type,
                 transcription_format=transcription_format,
+                input_path=input_path,
             )
             
             if progress_callback:
@@ -176,6 +220,7 @@ class TranscriptionService:
         output_dir: Path,
         transcription_type: TranscriptionType,
         transcription_format: TranscriptionFormat,
+        input_path: Optional[Path] = None,
     ) -> Dict[str, Path]:
         """
         Format transcription result and save to file(s).
@@ -185,6 +230,7 @@ class TranscriptionService:
             output_dir: Directory to save output files
             transcription_type: Type of transcription
             transcription_format: Output format
+            input_path: Original input file path (for metadata extraction)
             
         Returns:
             Dictionary mapping output type to file path
@@ -233,9 +279,13 @@ class TranscriptionService:
             output_files["subtitles_vtt"] = vtt_path
             
         elif transcription_type == TranscriptionType.LYRICS:
-            # LRC lyrics file
+            # LRC lyrics file - extract metadata from input file if available
+            metadata = {}
+            if input_path:
+                metadata = extract_audio_metadata(input_path)
+            
             output_path = output_dir / "lyrics.lrc"
-            self._write_lrc(result, output_path)
+            self._write_lrc(result, output_path, metadata)
             output_files["lyrics"] = output_path
         
         logger.info(f"Created output files: {list(output_files.keys())}")
@@ -266,12 +316,29 @@ class TranscriptionService:
                 f.write(f"{start} --> {end}\n")
                 f.write(f"{text}\n\n")
     
-    def _write_lrc(self, result: dict, output_path: Path):
-        """Write transcription as LRC lyrics file."""
+    def _write_lrc(self, result: dict, output_path: Path, metadata: Optional[Dict[str, str]] = None):
+        """
+        Write transcription as LRC lyrics file.
+        
+        Args:
+            result: Whisper transcription result
+            output_path: Path to write the LRC file
+            metadata: Optional dict with 'title', 'artist', 'album' from audio file tags
+        """
+        if metadata is None:
+            metadata = {}
+        
+        # Use metadata if available, otherwise use defaults
+        title = metadata.get("title") or "Transcribed Lyrics"
+        artist = metadata.get("artist") or "Unknown Artist"
+        album = metadata.get("album", "")
+        
         with open(output_path, "w", encoding="utf-8") as f:
-            # Write metadata
-            f.write("[ti:Transcribed Lyrics]\n")
-            f.write("[ar:Unknown Artist]\n")
+            # Write metadata header
+            f.write(f"[ti:{title}]\n")
+            f.write(f"[ar:{artist}]\n")
+            if album:
+                f.write(f"[al:{album}]\n")
             f.write("[by:Mux Minus]\n")
             f.write("\n")
             
