@@ -87,12 +87,18 @@ def extract_audio_metadata(file_path: Path) -> Dict[str, str]:
             return metadata
         
         # Extract common tags - mutagen returns lists, so take first item
-        if "title" in audio:
-            metadata["title"] = audio["title"][0]
-        if "artist" in audio:
-            metadata["artist"] = audio["artist"][0]
-        if "album" in audio:
-            metadata["album"] = audio["album"][0]
+        # Be defensive about None values and missing keys
+        title = audio.get("title")
+        if title and len(title) > 0 and title[0]:
+            metadata["title"] = str(title[0])
+            
+        artist = audio.get("artist")
+        if artist and len(artist) > 0 and artist[0]:
+            metadata["artist"] = str(artist[0])
+            
+        album = audio.get("album")
+        if album and len(album) > 0 and album[0]:
+            metadata["album"] = str(album[0])
             
         logger.debug(f"Extracted metadata: {metadata}")
         
@@ -294,10 +300,15 @@ class TranscriptionService:
     def _write_srt(self, result: dict, output_path: Path):
         """Write transcription as SRT subtitle file."""
         with open(output_path, "w", encoding="utf-8") as f:
-            for i, segment in enumerate(result.get("segments", []), start=1):
-                start = format_timestamp(segment["start"])
-                end = format_timestamp(segment["end"])
-                text = segment["text"].strip()
+            segments = result.get("segments") if result else []
+            if not segments:
+                segments = []
+            for i, segment in enumerate(segments, start=1):
+                if segment is None:
+                    continue
+                start = format_timestamp(segment.get("start", 0))
+                end = format_timestamp(segment.get("end", 0))
+                text = (segment.get("text") or "").strip()
                 
                 f.write(f"{i}\n")
                 f.write(f"{start} --> {end}\n")
@@ -308,10 +319,15 @@ class TranscriptionService:
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("WEBVTT\n\n")
             
-            for segment in result.get("segments", []):
-                start = format_timestamp(segment["start"]).replace(',', '.')
-                end = format_timestamp(segment["end"]).replace(',', '.')
-                text = segment["text"].strip()
+            segments = result.get("segments") if result else []
+            if not segments:
+                segments = []
+            for segment in segments:
+                if segment is None:
+                    continue
+                start = format_timestamp(segment.get("start", 0)).replace(',', '.')
+                end = format_timestamp(segment.get("end", 0)).replace(',', '.')
+                text = (segment.get("text") or "").strip()
                 
                 f.write(f"{start} --> {end}\n")
                 f.write(f"{text}\n\n")
@@ -343,9 +359,14 @@ class TranscriptionService:
             f.write("\n")
             
             # Write timestamped lyrics
-            for segment in result.get("segments", []):
-                timestamp = format_timestamp_lrc(segment["start"])
-                text = segment["text"].strip()
+            segments = result.get("segments") if result else []
+            if not segments:
+                segments = []
+            for segment in segments:
+                if segment is None:
+                    continue
+                timestamp = format_timestamp_lrc(segment.get("start", 0))
+                text = (segment.get("text") or "").strip()
                 f.write(f"{timestamp} {text}\n")
     
     @property
