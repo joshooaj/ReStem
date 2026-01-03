@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model
-from .models import Job, ModelChoice, StemChoice, OutputFormat
+from .models import Job, ModelChoice, StemChoice, OutputFormat, SiteSettings
 from .constants import MAX_UPLOAD_SIZE_SEPARATION, MAX_UPLOAD_SIZE_TRANSCRIPTION
 
 User = get_user_model()
@@ -49,6 +49,8 @@ class UserRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        # Use configurable default credits from SiteSettings
+        user.credits = SiteSettings.get_default_credits()
         if commit:
             user.save()
         return user

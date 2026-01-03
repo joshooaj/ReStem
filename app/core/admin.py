@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Job, CreditPackage, Purchase
+from .models import User, Job, CreditPackage, Purchase, SiteSettings
 
 
 @admin.register(User)
@@ -45,3 +45,17 @@ class PurchaseAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'square_payment_id')
     readonly_fields = ('id', 'created_at')
     ordering = ('-created_at',)
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    """Admin configuration for site-wide settings (singleton)."""
+    list_display = ('__str__', 'default_credits')
+    
+    def has_add_permission(self, request):
+        """Prevent creating additional instances - only one should exist."""
+        return not SiteSettings.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deleting the settings instance."""
+        return False

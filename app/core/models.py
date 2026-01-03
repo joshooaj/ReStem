@@ -209,3 +209,39 @@ class Purchase(models.Model):
     
     def __str__(self):
         return f"{self.user.email} - {self.package.name}"
+
+
+class SiteSettings(models.Model):
+    """
+    Singleton model for site-wide configuration.
+    
+    This model stores configurable settings that can be edited
+    through the Django admin interface.
+    """
+    default_credits = models.PositiveIntegerField(
+        default=3,
+        help_text="Number of free credits given to new users upon registration."
+    )
+    
+    class Meta:
+        verbose_name = "Site Settings"
+        verbose_name_plural = "Site Settings"
+    
+    def __str__(self):
+        return "Site Settings"
+    
+    def save(self, *args, **kwargs):
+        """Ensure only one instance exists (singleton pattern)."""
+        self.pk = 1
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_settings(cls):
+        """Get the site settings instance, creating it if needed."""
+        settings, _ = cls.objects.get_or_create(pk=1)
+        return settings
+    
+    @classmethod
+    def get_default_credits(cls):
+        """Get the default credits for new users."""
+        return cls.get_settings().default_credits
